@@ -1,0 +1,634 @@
+[[extend 'layout.html']]
+
+[[block header]]
+[[icon='fa fa-chart-line']]
+[[breadcamp = 'Date Wise Sales']]
+[[end]]
+
+[[block content]]
+<style>
+/* Chrome, Safari, Edge, Opera */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.no-spinner {
+  -moz-appearance: textfield;
+}
+
+/* IE 10+ */
+.no-spinner::-ms-clear,
+.no-spinner::-ms-expand {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.table > :not(caption) > * > *{
+    padding: 0.1rem;
+}
+.brand-name-scroll {
+    overflow-x: auto;
+    white-space: nowrap;
+}
+/* custom thin scrollbar for brand name */
+.brand-name-scroll::-webkit-scrollbar {
+    height: 4px;
+}
+.brand-name-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+.brand-name-scroll::-webkit-scrollbar-thumb {
+    background: #ccc9fa;
+    border-radius: 2px;
+}
+.brand-name-scroll::-webkit-scrollbar-thumb:hover {
+    background: #a8a4f7;
+}
+.brand-name-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #ccc9fa transparent;
+}
+</style>
+
+<div class="container-section">
+    <div class="d-flex justify-content-between align-items-center border-bottom">
+        <span class="icon-text icon-text-bold">
+            <i class="fa-solid fa-plus"></i>
+            <span>Edit</span>
+        </span>
+
+        <div class="d-flex justify-content-end">
+            <div class="p-1">
+                <button type="button" class="btn btn-sm btn-light d-none" id="btn_view">
+                    <i class="fa-regular fa-eye"></i> <span class="ms-2">View</span>
+                </button>
+                [[if check_active_date=="True":]]
+                <button type="button" class="btn btn-sm btn-light" id="btn_edit">
+                    <i class="fa-regular fa-pen-to-square"></i> <span class="ms-2">Edit</span>
+                </button>
+                [[pass]]
+            </div>
+            <div class="p-1">
+                <a href="[[=URL('outstanding_reconciliation/index')]]" class="btn btn-sm btn-light">
+                    <i class="fa-solid fa-arrow-left"></i> <span class="ms-2">Back</span>
+                </a>
+            </div>
+            [[if check_active_date=="True":]]
+            <div class="p-1">
+                <div class="btn-group">
+                    <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        Action
+                    </button>
+                    <!-- <ul class="dropdown-menu"> -->
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="delete?id=[[=request.query.get('id')]]" id="delete_btn">
+                            <i class="fa-solid fa-trash-can"></i><span class="ms-2">Delete</span></a>
+                    </div>
+                    <!-- </ul> -->
+                </div>
+            </div>
+            [[pass]]
+        </div>
+    </div>
+    <div class="container py-2">
+
+        <form action="[[=URL('outstanding_reconciliation','update')]]?id=[[=record.id]]" method="POST">
+
+            <div id="custom_form">        
+                <div class="row">                
+                    <div class="col-md-4">
+                        <div class="mb-3 custom_input">
+                            <label for="transaction_date" class="form-label">Transaction Date</label>
+                            <div class="flatpickr-wrapper">
+                                <input type="text" class="form-control form-control-sm date-picker" id="transaction_date" name="transaction_date" placeholder="Select Transaction Date" value="[[=record.trans_date]]">
+                                <i class="fa fa-calendar calendar-icon text-secondary calendar-toggle"></i>                            
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="mb-3 custom_input">
+                            <label for="branch_name" class="form-label">Branch Name</label>
+                            <select class="select_custom form-control form-select-sm selectChange" name="branch_name"
+                                id="branch_name">
+                                <option value="">Select Branch</option>
+                                [[for row in branchList:]]
+                                <option value="[[=row.id]]" [[if str(record['branch_id']) == str(row.id):]] selected [[pass]]>[[=row.name]]</option>
+                                [[pass]]
+                            </select>
+                        </div>                    
+                    </div>
+                    <div class="col-md-4"></div>
+                
+                </div>
+
+                <div class="row">
+                    <div class="table-responsive radius">
+                         <table class="table table-bordered radius mb-0" id="table_id">
+                            <thead style="background-color: #ccc9fa">
+                                <tr>
+                                    <th rowspan="2" class="text-center">Brand</th>
+                                    <th colspan="5" class="text-center">Sales (BD)</th>
+                                    <th colspan="5" class="text-center">Return</th>
+                                    <th colspan="5" class="text-center">Net Sales (AD)</th>
+                                </tr>
+                                <tr>
+                                    <th class="text-center">TP</th>
+                                    <th class="text-center">VAT</th>
+                                    <th class="text-center">Discount</th>
+                                    <th class="text-center">SP. Disc</th>
+                                    <th class="text-center">Net Sales</th>
+                                    <th class="text-center">TP</th>
+                                    <th class="text-center">VAT</th>
+                                    <th class="text-center">Discount</th>
+                                    <th class="text-center">SP. Disc</th>
+                                    <th class="text-center">Net Return</th>
+                                    <th class="text-center">TP</th>
+                                    <th class="text-center">VAT</th>
+                                    <th class="text-center">Discount</th>
+                                    <th class="text-center">SP. Disc</th>
+                                    <th class="text-center">Net Sales</th>
+                                </tr>
+                                </thead>
+                            <tbody id="tbody">
+                                [[
+                                    from collections import defaultdict
+                                    segments = defaultdict(list)
+
+                                    for row in rows:
+                                        segments[row.segment_name].append(row)
+                                    pass
+
+                                    t_s_tp = t_s_vat = t_s_dist = t_s_sp_disc = t_s_total = 0
+                                    t_r_tp = t_r_vat = t_r_dist = t_r_sp_disc = t_r_total = 0
+                                    t_n_tp = t_n_vat = t_n_dist = t_n_sp_disc = t_n_total = 0
+
+                                    def fmt_val(val):
+                                        if val is None:
+                                            return 0
+                                        try:
+                                            v = float(val)
+                                            return int(v) if v.is_integer() else v
+                                        except (ValueError, TypeError):
+                                            return 0
+                                    pass
+
+                                    # Group and sum record_detail if segment and brand duplicate exists
+                                    grouped_detail = {}
+                                    for rd in record_detail:
+                                        key = (int(rd.get('segment_id') or 0), int(rd.get('brand_id') or 0))
+                                        if key not in grouped_detail:
+                                            grouped_detail[key] = {
+                                                'segment_id': rd.get('segmnt_id'),
+                                                'brand_id': rd.get('brand_id'),
+                                                'sales_tp': float(rd.get('sales_tp') or 0),
+                                                'sales_vat': float(rd.get('sales_vat') or 0),
+                                                'sales_discount': float(rd.get('sales_discount') or 0),
+                                                'sales_sp_disc': float(rd.get('sales_sp_disc') or 0),
+                                                'sales_total': float(rd.get('sales_total') or 0),
+                                                'return_tp': float(rd.get('return_tp') or 0),
+                                                'return_vat': float(rd.get('return_vat') or 0),
+                                                'return_discount': float(rd.get('return_discount') or 0),
+                                                'return_sp_disc': float(rd.get('return_sp_disc') or 0),
+                                                'return_total': float(rd.get('return_total') or 0),
+                                                'net_sales_tp': float(rd.get('net_sales_tp') or 0),
+                                                'net_sales_vat': float(rd.get('net_sales_vat') or 0),
+                                                'net_sales_discount': float(rd.get('net_sales_discount') or 0),
+                                                'net_sales_sp_disc': float(rd.get('net_sales_sp_disc') or 0),
+                                                'net_sales_total': float(rd.get('net_sales_total') or 0),
+                                            }
+                                        else:
+                                            # Sum values
+                                            grouped_detail[key]['sales_tp'] += float(rd.get('sales_tp') or 0)
+                                            grouped_detail[key]['sales_vat'] += float(rd.get('sales_vat') or 0)
+                                            grouped_detail[key]['sales_discount'] += float(rd.get('sales_discount') or 0)
+                                            grouped_detail[key]['sales_sp_disc'] += float(rd.get('sales_sp_disc') or 0)
+                                            grouped_detail[key]['sales_total'] += float(rd.get('sales_total') or 0)
+                                            grouped_detail[key]['return_tp'] += float(rd.get('return_tp') or 0)
+                                            grouped_detail[key]['return_vat'] += float(rd.get('return_vat') or 0)
+                                            grouped_detail[key]['return_discount'] += float(rd.get('return_discount') or 0)
+                                            grouped_detail[key]['return_sp_disc'] += float(rd.get('return_sp_disc') or 0)
+                                            grouped_detail[key]['return_total'] += float(rd.get('return_total') or 0)
+                                            grouped_detail[key]['net_sales_tp'] += float(rd.get('net_sales_tp') or 0)
+                                            grouped_detail[key]['net_sales_vat'] += float(rd.get('net_sales_vat') or 0)
+                                            grouped_detail[key]['net_sales_discount'] += float(rd.get('net_sales_discount') or 0)
+                                            grouped_detail[key]['net_sales_sp_disc'] += float(rd.get('net_sales_sp_disc') or 0)
+                                            grouped_detail[key]['net_sales_total'] += float(rd.get('net_sales_total') or 0)
+                                    pass
+                                    pass
+                                    ]]
+
+                                    [[for segment_name, brand_list in segments.items():]]
+                                        [[
+                                        for brand in brand_list:
+                                            d_row = grouped_detail.get((int(brand.segment_id or 0), int(brand.id or 0))) or {}
+                                            t_s_tp      += float(d_row.get('sales_tp') or 0)
+                                            t_s_vat     += float(d_row.get('sales_vat') or 0)
+                                            t_s_dist    += float(d_row.get('sales_discount') or 0)
+                                            t_s_sp_disc += float(d_row.get('sales_sp_disc') or 0)
+                                            t_s_total   += float(d_row.get('sales_total') or 0)
+
+                                            t_r_tp      += float(d_row.get('return_tp') or 0)
+                                            t_r_vat     += float(d_row.get('return_vat') or 0)
+                                            t_r_dist    += float(d_row.get('return_discount') or 0)
+                                            t_r_sp_disc += float(d_row.get('return_sp_disc') or 0)
+                                            t_r_total   += float(d_row.get('return_total') or 0)
+                                            
+                                            t_n_tp      += float(d_row.get('net_sales_tp') or 0)
+                                            t_n_vat     += float(d_row.get('net_sales_vat') or 0)
+                                            t_n_dist    += float(d_row.get('net_sales_discount') or 0)
+                                            t_n_sp_disc += float(d_row.get('net_sales_sp_disc') or 0)
+                                            t_n_total   += float(d_row.get('net_sales_total') or 0)
+                                        pass
+                                        ]]
+                                    [[pass]]
+
+                                    <tr class="rowClass bg-info fw-bolder text-white">
+                                        <td>Total</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(t_s_tp)) if float(t_s_tp).is_integer() else "{:,.2f}".format(t_s_tp) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(t_s_vat)) if float(t_s_vat).is_integer() else "{:,.2f}".format(t_s_vat) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(t_s_dist)) if float(t_s_dist).is_integer() else "{:,.2f}".format(t_s_dist) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(t_s_sp_disc)) if float(t_s_sp_disc).is_integer() else "{:,.2f}".format(t_s_sp_disc) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(t_s_total)) if float(t_s_total).is_integer() else "{:,.2f}".format(t_s_total) ]]</td>
+
+                                        <td class="row-index text-end">[[= "{:,}".format(int(t_r_tp)) if float(t_r_tp).is_integer() else "{:,.2f}".format(t_r_tp) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(t_r_vat)) if float(t_r_vat).is_integer() else "{:,.2f}".format(t_r_vat) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(t_r_dist)) if float(t_r_dist).is_integer() else "{:,.2f}".format(t_r_dist) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(t_r_sp_disc)) if float(t_r_sp_disc).is_integer() else "{:,.2f}".format(t_r_sp_disc) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(t_r_total)) if float(t_r_total).is_integer() else "{:,.2f}".format(t_r_total) ]]</td>
+
+                                        <td class="row-index text-end">[[= "{:,}".format(int(t_n_tp)) if float(t_n_tp).is_integer() else "{:,.2f}".format(t_n_tp) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(t_n_vat)) if float(t_n_vat).is_integer() else "{:,.2f}".format(t_n_vat) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(t_n_dist)) if float(t_n_dist).is_integer() else "{:,.2f}".format(t_n_dist) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(t_n_sp_disc)) if float(t_n_sp_disc).is_integer() else "{:,.2f}".format(t_n_sp_disc) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(t_n_total)) if float(t_n_total).is_integer() else "{:,.2f}".format(t_n_total) ]]</td>
+                                    </tr>
+
+
+                                [[for segment_name, brand_list in segments.items():]]
+                                        [[
+                                        s_tp = s_vat = s_dist = s_sp_disc = s_total = 0
+                                        r_tp = r_vat = r_dist = r_sp_disc = r_total = 0
+                                        n_tp = n_vat = n_dist = n_sp_disc = n_total = 0
+
+                                        brand_data = []
+
+                                        for brand in brand_list:
+                                            d_row = grouped_detail.get((int(brand.segment_id or 0), int(brand.id or 0))) or {}
+                                            brand_data.append((brand, d_row))                                       
+
+                                            s_tp      += float(d_row.get('sales_tp') or 0)
+                                            s_vat     += float(d_row.get('sales_vat') or 0)
+                                            s_dist    += float(d_row.get('sales_discount') or 0)
+                                            s_sp_disc += float(d_row.get('sales_sp_disc') or 0)
+                                            s_total   += float(d_row.get('sales_total') or 0)
+
+                                            r_tp      += float(d_row.get('return_tp') or 0)
+                                            r_vat     += float(d_row.get('return_vat') or 0)
+                                            r_dist    += float(d_row.get('return_discount') or 0)
+                                            r_sp_disc += float(d_row.get('return_sp_disc') or 0)
+                                            r_total   += float(d_row.get('return_total') or 0)
+
+                                            n_tp      += float(d_row.get('net_sales_tp') or 0)
+                                            n_vat     += float(d_row.get('net_sales_vat') or 0)
+                                            n_dist    += float(d_row.get('net_sales_discount') or 0)
+                                            n_sp_disc += float(d_row.get('net_sales_sp_disc') or 0)
+                                            n_total   += float(d_row.get('net_sales_total') or 0)
+                                        
+                                        pass
+                                        ]]
+
+                                    <tr class="rowClass bg-light fw-bold">
+                                        <td>[[=segment_name]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(s_tp)) if float(s_tp).is_integer() else "{:,.2f}".format(s_tp) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(s_vat)) if float(s_vat).is_integer() else "{:,.2f}".format(s_vat) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(s_dist)) if float(s_dist).is_integer() else "{:,.2f}".format(s_dist) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(s_sp_disc)) if float(s_sp_disc).is_integer() else "{:,.2f}".format(s_sp_disc) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(s_total)) if float(s_total).is_integer() else "{:,.2f}".format(s_total) ]]</td>
+
+                                        <td class="row-index text-end">[[= "{:,}".format(int(r_tp)) if float(r_tp).is_integer() else "{:,.2f}".format(r_tp) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(r_vat)) if float(r_vat).is_integer() else "{:,.2f}".format(r_vat) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(r_dist)) if float(r_dist).is_integer() else "{:,.2f}".format(r_dist) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(r_sp_disc)) if float(r_sp_disc).is_integer() else "{:,.2f}".format(r_sp_disc) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(r_total)) if float(r_total).is_integer() else "{:,.2f}".format(r_total) ]]</td>
+
+                                        <td class="row-index text-end">[[= "{:,}".format(int(n_tp)) if float(n_tp).is_integer() else "{:,.2f}".format(n_tp) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(n_vat)) if float(n_vat).is_integer() else "{:,.2f}".format(n_vat) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(n_dist)) if float(n_dist).is_integer() else "{:,.2f}".format(n_dist) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(n_sp_disc)) if float(n_sp_disc).is_integer() else "{:,.2f}".format(n_sp_disc) ]]</td>
+                                        <td class="row-index text-end">[[= "{:,}".format(int(n_total)) if float(n_total).is_integer() else "{:,.2f}".format(n_total) ]]</td>
+                                    </tr>
+
+                                    
+                                    [[for brand, d_row in brand_data:]]
+                                        
+
+                                <tr class="rowClass"> 
+                                    <td class="row-index text-left"> 
+                                        <div class="col-md-12" style="width:15ch">
+                                            <div class="custom_input brand-name-scroll">
+                                                [[=brand.name]]
+                                            </div>
+                                            <input type="hidden" class="form-control form-control-sm no-spinner brand_name" name="brand_name" value="[[=brand.id]]" style="text-align:right">
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left"> 
+                                        <div class="col-md-12" style="width:90px">
+                                            <div class="custom_input">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="s_tp_[[=brand.id]]" value="[[=fmt_val(d_row.get('sales_tp'))]]" style="text-align:right" autocomplete="off"> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left"> 
+                                        <div class="col-md-12" style="width:90px">
+                                            <div class="custom_input">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="s_vat_[[=brand.id]]" value="[[=fmt_val(d_row.get('sales_vat'))]]"  style="text-align:right" autocomplete="off"> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left"> 
+                                        <div class="col-md-12" style="width:90px">
+                                            <div class="custom_input">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="s_disc_[[=brand.id]]" value="[[=fmt_val(d_row.get('sales_discount'))]]" style="text-align:right" autocomplete="off"> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left"> 
+                                        <div class="col-md-12" style="width:90px">
+                                            <div class="custom_input">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="s_sp_disc_[[=brand.id]]" value="[[=fmt_val(d_row.get('sales_sp_disc'))]]" style="text-align:right" autocomplete="off"> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left"> 
+                                        <div class="col-md-12" style="width:90px">
+                                            <div class="custom_input">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="s_total_[[=brand.id]]" value="[[=fmt_val(d_row.get('sales_total'))]]" style="text-align:right" autocomplete="off" readonly> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left"> 
+                                        <div class="col-md-12" style="width:90px">
+                                            <div class="custom_input">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="r_tp_[[=brand.id]]" value="[[=fmt_val(d_row.get('return_tp'))]]" style="text-align:right" autocomplete="off"> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left"> 
+                                        <div class="col-md-12" style="width:90px">
+                                            <div class="custom_input">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="r_vat_[[=brand.id]]" value="[[=fmt_val(d_row.get('return_vat'))]]" style="text-align:right" autocomplete="off"> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left"> 
+                                        <div class="col-md-12" style="width:90px">
+                                            <div class="custom_input">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="r_disc_[[=brand.id]]" value="[[=fmt_val(d_row.get('return_discount'))]]" style="text-align:right" autocomplete="off"> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left"> 
+                                        <div class="col-md-12" style="width:90px">
+                                            <div class="custom_input">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="r_sp_disc_[[=brand.id]]" value="[[=fmt_val(d_row.get('return_sp_disc'))]]" style="text-align:right" autocomplete="off"> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left"> 
+                                        <div class="col-md-12" style="width:90px">
+                                            <div class="custom_input">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="r_total_[[=brand.id]]" value="[[=fmt_val(d_row.get('return_total'))]]" style="text-align:right" autocomplete="off" readonly> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left"> 
+                                        <div class="col-md-12" style="width:90px">
+                                            <div class="custom_input">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="n_tp_[[=brand.id]]" value="[[=fmt_val(d_row.get('net_sales_tp'))]]"  style="text-align:right" autocomplete="off" readonly> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left"> 
+                                        <div class="col-md-12" style="width:90px">
+                                            <div class="custom_input">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="n_vat_[[=brand.id]]" value="[[=fmt_val(d_row.get('net_sales_vat'))]]" style="text-align:right" autocomplete="off" readonly> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left"> 
+                                        <div class="col-md-12" style="width:90px">
+                                            <div class="custom_input">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="n_disc_[[=brand.id]]" value="[[=fmt_val(d_row.get('net_sales_discount'))]]" style="text-align:right" autocomplete="off" readonly> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left"> 
+                                        <div class="col-md-12" style="width:90px">
+                                            <div class="custom_input">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="n_sp_disc_[[=brand.id]]" value="[[=fmt_val(d_row.get('net_sales_sp_disc'))]]" style="text-align:right" autocomplete="off" readonly> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left"> 
+                                        <div class="col-md-12" style="width:90px">
+                                            <div class="custom_input">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="n_total_[[=brand.id]]" value="[[=fmt_val(float(d_row.get('net_sales_total') or 0))]]" style="text-align:right" autocomplete="off" readonly> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                                                    
+                                </tr>
+                                [[pass]]
+                                [[pass]]
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <br>
+                <div class="row d-none" id="edit_view_section">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-start">
+                            <div class="me-2">
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="fa-regular fa-floppy-disk"></i> <span class="ms-2">Post</span>
+                                </button>
+                            </div>
+                            <div class="">
+                                <button type="reset" class="btn btn-sm btn-light">
+                                    <i class="fa-solid fa-retweet"></i> <span class="ms-2">Reset</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+[[end]]
+[[block scripts]]
+<!-- individual pages can add scripts here -->
+ <script>
+    $(document).ready(function () {
+        var active_date = "[[=active_date]]";  
+        var expire_at = "[[=expire_at]]";
+        var current_date = "[[=str(date_time_list['current_date'])]]";
+
+        var active_date_arr = [];
+        if (expire_at == current_date) {
+            active_date_arr = active_date.split(',').map(function(dateStr) {
+                var date = new Date(dateStr.trim());
+                var yyyy = date.getFullYear();
+                var mm = String(date.getMonth() + 1).padStart(2, '0');
+                var dd = String(date.getDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;   // always Y-m-d
+            });
+        } else {
+            console.log('not today');
+        }
+
+        // Collect backDate → today
+        const dates = new Set();
+        const today = new Date();
+        const backDate = new Date(today);
+        backDate.setDate(today.getDate() - 3);
+
+        // Helper: format date as Y-m-d
+        function formatYMD(d) {
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        // Add backDate → today (Y-m-d format)
+        for (let d = new Date(backDate); d <= today; d.setDate(d.getDate() + 1)) {
+            dates.add(formatYMD(new Date(d)));
+        }
+
+        // Merge & unique
+        const mergedDates = [...active_date_arr, ...Array.from(dates)];
+        const activeDates = [...new Set(mergedDates)];
+
+        // Role-based initialization: make the field editable only for super_admin
+        let transactionPicker;
+        "[[if session.get('role') == 'super_admin':]]"
+        transactionPicker = flatpickr("#transaction_date", {
+            dateFormat: "Y-m-d",   // actual value
+            altInput: true,
+            altFormat: "d-M-Y",    // show to user
+            //enable: activeDates,   // must be Y-m-d
+            allowInput: true, // allow typing for super_admin
+            clickOpens: true
+            ,
+            // allow choosing any past date up to today
+            maxDate: new Date()
+        });
+        try {
+            // If there's no value set in the input, default to today's date for super_admin
+            if (transactionPicker && !transactionPicker.input.value) {
+                transactionPicker.setDate(new Date(), false);
+            }
+        } catch (e) { console.warn('failed to default to today:', e); }
+        try {
+            if (transactionPicker) {
+                if (transactionPicker.input) transactionPicker.input.readOnly = false;
+                if (transactionPicker.altInput) {
+                    transactionPicker.altInput.removeAttribute('readonly');
+                    transactionPicker.altInput.tabIndex = 0; // keep keyboard focusable
+                }
+            }
+        } catch (e) { console.warn('failed to set altInput editable:', e); }
+        "[[else:]]"
+        $('#transaction_date').attr('readonly', true);
+        transactionPicker = flatpickr("#transaction_date", {
+            dateFormat: "Y-m-d",   // actual value
+            altInput: true,
+            altFormat: "d-M-Y",    // show to user
+            //enable: activeDates,   // must be Y-m-d
+            allowInput: false, // disable typing for non-super-admin
+            clickOpens: false
+            //,
+            // restrict to past dates only
+            //maxDate: new Date()
+        });
+        try {
+            if (transactionPicker) {
+                if (transactionPicker.input) transactionPicker.input.readOnly = true;
+                if (transactionPicker.altInput) {
+                    transactionPicker.altInput.setAttribute('readonly', 'true');
+                    transactionPicker.altInput.tabIndex = -1; // prevent tab focus
+                }
+            }
+        } catch (e) { console.warn('failed to set altInput readonly:', e); }
+        "[[pass]]"
+        // Open the flatpickr when the calendar icon is clicked
+        $('.calendar-toggle').on('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            try{
+                if (transactionPicker) transactionPicker.open();
+            } catch(err) { console.warn('Calendar pick not initialized', err); }
+        });
+
+
+
+        
+    // Listen for keyup or blur on sales/return input fields
+        $(document).on("keyup blur",
+            "input[name^='s_tp_'], input[name^='s_vat_'], input[name^='s_disc_'], input[name^='s_sp_disc_'], \
+            input[name^='r_tp_'], input[name^='r_vat_'], input[name^='r_disc_'], input[name^='r_sp_disc_']",
+            function () {
+
+            let $row = $(this).closest("tr"); // current row
+
+            const getCleanVal = (name) => {
+                let val = $row.find("input[name^='" + name + "_']").val() || '';
+                return parseFloat(val.replace(/,/g, '')) || 0;
+            };
+
+            // ------- Sales -------
+            let s_tp = getCleanVal('s_tp');
+            let s_vat = getCleanVal('s_vat');
+            let s_disc = getCleanVal('s_disc');
+            let s_sp_disc = getCleanVal('s_sp_disc');
+
+            let sales_total = (s_tp + s_vat) - (s_disc + s_sp_disc);
+            $row.find("input[name^='s_total_']").val(sales_total.toFixed(2)).trigger('input');
+
+            // ------- Return -------
+            let r_tp = getCleanVal('r_tp');
+            let r_vat = getCleanVal('r_vat');
+            let r_disc = getCleanVal('r_disc');
+            let r_sp_disc = getCleanVal('r_sp_disc');
+
+            let return_total = (r_tp + r_vat) - (r_disc + r_sp_disc);
+            $row.find("input[name^='r_total_']").val(return_total.toFixed(2)).trigger('input');
+
+            // ------- Net Sales (AD) -------
+            let n_tp = s_tp - r_tp;
+            let n_vat = s_vat - r_vat;
+            let n_disc = s_disc - r_disc;
+            let n_sp_disc = s_sp_disc - r_sp_disc;
+
+            let n_total = (n_tp + n_vat) - (n_disc + n_sp_disc);
+
+            $row.find("input[name^='n_tp_']").val(n_tp.toFixed(2)).trigger('input');
+            $row.find("input[name^='n_vat_']").val(n_vat.toFixed(2)).trigger('input');
+            $row.find("input[name^='n_disc_']").val(n_disc.toFixed(2)).trigger('input');
+            $row.find("input[name^='n_sp_disc_']").val(n_sp_disc.toFixed(2)).trigger('input');
+            $row.find("input[name^='n_total_']").val(n_total.toFixed(2)).trigger('input');
+        });
+    });
+
+
+
+ </script>
+[[end]]

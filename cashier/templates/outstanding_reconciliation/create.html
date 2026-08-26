@@ -1,0 +1,412 @@
+[[extend 'layout.html']]
+
+[[block header]]
+[[icon='fa fa-chart-line']]
+[[breadcamp = 'Date Wise Sales']]
+
+[[end]]
+
+[[block content]]
+
+<style>
+/* Chrome, Safari, Edge, Opera */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.no-spinner {
+  -moz-appearance: textfield;
+}
+
+/* IE 10+ */
+.no-spinner::-ms-clear,
+.no-spinner::-ms-expand {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.table > :not(caption) > * > *{
+    padding: 0.1rem;
+}
+.bg-gray {
+    background-color: #ced4da !important;
+}
+.brand-name-scroll {
+    overflow-x: auto;
+    white-space: nowrap;
+}
+/* custom thin scrollbar for brand name */
+.brand-name-scroll::-webkit-scrollbar {
+    height: 4px;
+}
+.brand-name-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+.brand-name-scroll::-webkit-scrollbar-thumb {
+    background: #ccc9fa;
+    border-radius: 2px;
+}
+.brand-name-scroll::-webkit-scrollbar-thumb:hover {
+    background: #a8a4f7;
+}
+.brand-name-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #ccc9fa transparent;
+}
+</style>
+
+<div class="container-section">
+    <div class="d-flex justify-content-between align-items-center border-bottom">
+        <span class="icon-text icon-text-bold">
+            <i class="fa-solid fa-plus"></i>
+            <span>Create</span>
+        </span>
+
+        <div class="d-flex justify-content-end">
+            <div class="p-1">
+                <a href="[[=URL('outstanding_reconciliation/index')]]" class="btn btn-sm btn-light">
+                    <i class="fa-solid fa-arrow-left"></i> <span class="ms-2">Back</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="container py-2">
+
+        <form action="[[=URL('outstanding_reconciliation','submit')]]" method="POST">
+
+        <div id="custom_form">        
+            <div class="row">                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="transaction_date" class="form-label">Transaction Date</label>
+                        <div class="flatpickr-wrapper">
+                            <input type="text" class="form-control form-control-sm date-picker" id="transaction_date" name="transaction_date" placeholder="Select Transaction Date" value="[[=formatted_date]]">
+                            <i class="fa fa-calendar calendar-icon text-secondary calendar-toggle"></i>                            
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="branch_name" class="form-label">Branch Name</label>
+                        <select class="select_custom form-control form-select-sm selectChange" name="branch_name"
+                            id="branch_name">
+                            <option value="">Select Branch</option>
+                            [[for row in branchList:]]
+                            <option value="[[=row.id]]" [[if len(branchList)==1:]] selected [[pass]]>[[=row.name]]</option>
+                            [[pass]]
+                        </select>
+                    </div>                    
+                </div>
+                <div class="col-md-4"></div>
+              
+            </div>
+            <div class="row">
+                <div class="table-responsive radius">
+                    <table class="table table-bordered radius mb-0" id="table_id">
+                        <thead style="background-color: #ccc9fa">
+                            <tr>
+                                <th rowspan="2" class="text-center">Brand</th>
+                                <th colspan="5" class="text-center">Sales (BD)</th>
+                                <th colspan="5" class="text-center">Return</th>
+                                <th colspan="5" class="text-center">Net Sales (AD)</th>
+                            </tr>
+                            <tr>
+                                <th class="text-center">TP</th>
+                                <th class="text-center">VAT</th>
+                                <th class="text-center">Discount</th>
+                                <th class="text-center">SP. Disc</th>
+                                <th class="text-center">Net Sales</th>
+                                <th class="text-center">TP</th>
+                                <th class="text-center">VAT</th>
+                                <th class="text-center">Discount</th>
+                                <th class="text-center">SP. Disc</th>
+                                <th class="text-center">Net Return</th>
+                                <th class="text-center">TP</th>
+                                <th class="text-center">VAT</th>
+                                <th class="text-center">Discount</th>
+                                <th class="text-center">SP. Disc</th>
+                                <th class="text-center">Net Sales</th>
+                            </tr>
+                            </thead>
+                        <tbody id="tbody">
+                            [[
+                            from collections import defaultdict
+                            segments = defaultdict(list)
+
+                            for row in rows:
+                                segments[row.segment_name].append(row)
+                            pass
+                            ]]
+
+                            [[for segment_name, brand_list in segments.items():]]
+                                <tr class="rowClass bg-light"> 
+                                <td class="row-index text-left" colspan="16"> 
+                                    [[=segment_name]]
+                                                            
+                                </td>
+                                </tr>
+                                
+                                [[for brand in brand_list:]]
+                                    
+
+                            <tr class="rowClass"> 
+                                <td class="row-index text-left"> 
+                                    <div class="col-md-12" style="width:15ch">
+                                        <div class="brand-name-scroll">
+                                            [[=brand.name]]
+                                        </div>
+                                        <input type="hidden" class="form-control form-control-sm no-spinner brand_name" name="brand_name" value="[[=brand.id]]" style="text-align:right">
+                                    </div>                     
+                                </td>     
+                                <td class="row-index text-left"> 
+                                    <div class="col-md-12" style="width:90px">
+                                        <div class="">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="s_tp_[[=brand.id]]" style="text-align:right" autocomplete="off"> 
+                                        </div>
+                                    </div>                     
+                                </td>     
+                                <td class="row-index text-left"> 
+                                    <div class="col-md-12" style="width:90px">
+                                        <div class="">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="s_vat_[[=brand.id]]" style="text-align:right" autocomplete="off"> 
+                                        </div>
+                                    </div>                     
+                                </td>     
+                                <td class="row-index text-left"> 
+                                    <div class="col-md-12" style="width:90px">
+                                        <div class="">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="s_disc_[[=brand.id]]" style="text-align:right" autocomplete="off"> 
+                                        </div>
+                                    </div>                     
+                                </td>     
+                                <td class="row-index text-left"> 
+                                    <div class="col-md-12" style="width:90px">
+                                        <div class="">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="s_sp_disc_[[=brand.id]]" style="text-align:right" autocomplete="off"> 
+                                        </div>
+                                    </div>                     
+                                </td>     
+                                <td class="row-index text-left"> 
+                                    <div class="col-md-12" style="width:90px">
+                                        <div class="">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="s_total_[[=brand.id]]" style="text-align:right" autocomplete="off" readonly> 
+                                        </div>
+                                    </div>                     
+                                </td>     
+                                <td class="row-index text-left"> 
+                                    <div class="col-md-12" style="width:90px">
+                                        <div class="">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="r_tp_[[=brand.id]]" style="text-align:right" autocomplete="off"> 
+                                        </div>
+                                    </div>                     
+                                </td>     
+                                <td class="row-index text-left"> 
+                                    <div class="col-md-12" style="width:90px">
+                                        <div class="">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="r_vat_[[=brand.id]]" style="text-align:right" autocomplete="off"> 
+                                        </div>
+                                    </div>                     
+                                </td>     
+                                <td class="row-index text-left"> 
+                                    <div class="col-md-12" style="width:90px">
+                                        <div class="">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="r_disc_[[=brand.id]]" style="text-align:right" autocomplete="off"> 
+                                        </div>
+                                    </div>                     
+                                </td>     
+                                <td class="row-index text-left"> 
+                                    <div class="col-md-12" style="width:90px">
+                                        <div class="">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="r_sp_disc_[[=brand.id]]" style="text-align:right" autocomplete="off"> 
+                                        </div>
+                                    </div>                     
+                                </td>     
+                                <td class="row-index text-left"> 
+                                    <div class="col-md-12" style="width:90px">
+                                        <div class="">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="r_total_[[=brand.id]]" style="text-align:right" autocomplete="off" readonly> 
+                                        </div>
+                                    </div>                     
+                                </td>     
+                                <td class="row-index text-left"> 
+                                    <div class="col-md-12" style="width:90px">
+                                        <div class="">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="n_tp_[[=brand.id]]" style="text-align:right" autocomplete="off" readonly> 
+                                        </div>
+                                    </div>                     
+                                </td>     
+                                <td class="row-index text-left"> 
+                                    <div class="col-md-12" style="width:90px">
+                                        <div class="">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="n_vat_[[=brand.id]]" style="text-align:right" autocomplete="off" readonly> 
+                                        </div>
+                                    </div>                     
+                                </td>     
+                                <td class="row-index text-left"> 
+                                    <div class="col-md-12" style="width:90px">
+                                        <div class="">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="n_disc_[[=brand.id]]" style="text-align:right" autocomplete="off" readonly> 
+                                        </div>
+                                    </div>                     
+                                </td>     
+                                <td class="row-index text-left"> 
+                                    <div class="col-md-12" style="width:90px">
+                                        <div class="">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="n_sp_disc_[[=brand.id]]" style="text-align:right" autocomplete="off" readonly> 
+                                        </div>
+                                    </div>                     
+                                </td>     
+                                <td class="row-index text-left"> 
+                                    <div class="col-md-12" style="width:90px">
+                                        <div class="">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number" name="n_total_[[=brand.id]]" style="text-align:right" autocomplete="off" readonly> 
+                                        </div>
+                                    </div>                     
+                                </td>     
+                                                                
+                            </tr>
+                            [[pass]]
+                            [[pass]]
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-start">
+                        <div class="me-2">
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i class="fa-regular fa-floppy-disk"></i> <span class="ms-2">Post</span>
+                            </button>
+                        </div>
+                        <div class="">
+                            <button type="reset" class="btn btn-sm btn-light">
+                                <i class="fa-solid fa-retweet"></i> <span class="ms-2">Reset</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </form>
+    </div>
+
+</div>
+[[end]]
+[[block scripts]]
+<!-- individual pages can add scripts here -->
+<script>
+    
+
+    $(document).ready(function () {
+        var active_date = "[[=active_date]]";  
+        var expire_at = "[[=expire_at]]";
+        var current_date = "[[=str(date_time_list['current_date'])]]";
+
+        var active_date_arr = [];
+        if (expire_at == current_date) {
+            active_date_arr = active_date.split(',').map(function(dateStr) {
+                var date = new Date(dateStr.trim());
+                var yyyy = date.getFullYear();
+                var mm = String(date.getMonth() + 1).padStart(2, '0');
+                var dd = String(date.getDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;   // always Y-m-d
+            });
+        } else {
+            console.log('not today');
+        }
+
+        // Collect backDate → today
+        const dates = new Set();
+        const today = new Date();
+        const backDate = new Date(today);
+        backDate.setDate(today.getDate() - 3);
+
+        // Helper: format date as Y-m-d
+        function formatYMD(d) {
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        // Add backDate → today (Y-m-d format)
+        for (let d = new Date(backDate); d <= today; d.setDate(d.getDate() + 1)) {
+            dates.add(formatYMD(new Date(d)));
+        }
+
+        // Merge & unique
+        const mergedDates = [...active_date_arr, ...Array.from(dates)];
+        const activeDates = [...new Set(mergedDates)];
+
+        "[[if session.get('role') !='super_admin':]]"
+        flatpickr("#transaction_date", {
+            dateFormat: "Y-m-d",   // actual value
+            altInput: true,
+            altFormat: "d-M-Y",    // show to user
+            enable: activeDates,   // must be Y-m-d
+            allowInput: true,
+        });
+        "[[pass]]"
+        
+
+
+
+    // Listen for keyup or blur on sales/return input fields
+    $(document).on("keyup blur",
+        "input[name^='s_tp_'], input[name^='s_vat_'], input[name^='s_disc_'], input[name^='s_sp_disc_'], \
+         input[name^='r_tp_'], input[name^='r_vat_'], input[name^='r_disc_'], input[name^='r_sp_disc_']",
+        function () {
+
+        let $row = $(this).closest("tr"); // current row
+
+        const getCleanVal = (name) => {
+            let val = $row.find("input[name^='" + name + "_']").val() || '';
+            return parseFloat(val.replace(/,/g, '')) || 0;
+        };
+
+        // ------- Sales -------
+        let s_tp = getCleanVal('s_tp');
+        let s_vat = getCleanVal('s_vat');
+        let s_disc = getCleanVal('s_disc');
+        let s_sp_disc = getCleanVal('s_sp_disc');
+
+        let sales_total = (s_tp + s_vat) - (s_disc + s_sp_disc);
+        $row.find("input[name^='s_total_']").val(sales_total.toFixed(2)).trigger('input');
+
+        // ------- Return -------
+        let r_tp = getCleanVal('r_tp');
+        let r_vat = getCleanVal('r_vat');
+        let r_disc = getCleanVal('r_disc');
+        let r_sp_disc = getCleanVal('r_sp_disc');
+
+        let return_total = (r_tp + r_vat) - (r_disc + r_sp_disc);
+        $row.find("input[name^='r_total_']").val(return_total.toFixed(2)).trigger('input');
+
+        // ------- Net Sales (AD) -------
+        let n_tp = s_tp - r_tp;
+        let n_vat = s_vat - r_vat;
+        let n_disc = s_disc - r_disc;
+        let n_sp_disc = s_sp_disc - r_sp_disc;
+
+        let n_total = (n_tp + n_vat) - (n_disc + n_sp_disc);
+
+        $row.find("input[name^='n_tp_']").val(n_tp.toFixed(2)).trigger('input');
+        $row.find("input[name^='n_vat_']").val(n_vat.toFixed(2)).trigger('input');
+        $row.find("input[name^='n_disc_']").val(n_disc.toFixed(2)).trigger('input');
+        $row.find("input[name^='n_sp_disc_']").val(n_sp_disc.toFixed(2)).trigger('input');
+        $row.find("input[name^='n_total_']").val(n_total.toFixed(2)).trigger('input');
+    });
+});
+
+
+
+</script>
+
+[[end]]

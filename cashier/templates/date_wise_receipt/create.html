@@ -1,0 +1,304 @@
+[[extend 'layout.html']]
+
+[[block header]]
+[[icon='fa fa-chart-line']]
+[[breadcamp = 'Date Wise Receipts']]
+
+[[end]]
+
+[[block content]]
+
+<style>
+/* Chrome, Safari, Edge, Opera */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.no-spinner {
+  -moz-appearance: textfield;
+}
+
+/* IE 10+ */
+.no-spinner::-ms-clear,
+.no-spinner::-ms-expand {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.table > :not(caption) > * > *{
+    padding: 0.1rem;
+}
+</style>
+
+<div class="container-section">
+    <div class="d-flex justify-content-between align-items-center border-bottom">
+        <span class="icon-text icon-text-bold">
+            <i class="fa-solid fa-plus"></i>
+            <span>Create</span>
+        </span>
+
+        <div class="d-flex justify-content-end">
+            <div class="p-1">
+                <a href="[[=URL('date_wise_receipt/index')]]" class="btn btn-sm btn-light">
+                    <i class="fa-solid fa-arrow-left"></i> <span class="ms-2">Back</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="container py-2">
+
+        <form action="[[=URL('date_wise_receipt','submit')]]" method="POST">
+
+        <div id="custom_form">        
+            <div class="row">                
+                <div class="col-md-4">
+                    <div class="mb-3">
+
+                        <label for="transaction_date" class="form-label">Transaction Date</label>
+                        <div class="flatpickr-wrapper">
+                        <input type="text"
+                                id="transaction_date"
+                                class="form-control form-control-sm date-picker"
+                                name="transaction_date"
+                                placeholder="Select Transaction Date"
+                                value="[[=formatted_date]]">
+                        <i class="fa fa-calendar calendar-icon text-secondary calendar-toggle"></i>
+                        </div>
+                    </div>
+                    </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="branch_name" class="form-label">Branch Name</label>
+                        <select class="select_custom form-control form-select-sm selectChange" name="branch_name"
+                            id="branch_name">
+                            <option value="">Select Branch</option>
+                            [[for row in branchList:]]
+                            <option value="[[=row.id]]" [[if len(branchList)==1:]] selected [[pass]]>[[=row.name]]</option>
+                            [[pass]]
+                        </select>
+                    </div>                    
+                </div>
+                <div class="col-md-4"></div>
+              
+            </div>
+            <div class="row">
+                <div class="table-responsive radius">
+                        <table class="table table-bordered radius mb-0" id="table_id">
+                            <thead style="background-color: #ccc9fa">
+                                <tr>
+                                    <th class="text-left">
+                                        Brand
+                                    </th>
+                                    <th class="text-end">
+                                        Collection
+                                    </th>
+                                    <th class="text-end">
+                                        Money Receipt
+                                    </th>
+                                    <th class="text-end">
+                                        Advance Receipt
+                                    </th>
+                                    <th class="text-end">
+                                        Srt/Ex Receipt
+                                    </th>
+                                    <th class="text-end">
+                                        Adv Adjustment
+                                    </th>
+                                    <th class="text-end">
+                                        AR Adjustment (+)
+                                    </th>
+                                    <th class="text-end">
+                                        AR Adjustment (-)
+                                    </th>
+                                    <th class="text-end">
+                                        Mr Reverse
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody">
+                                [[
+                                from collections import defaultdict
+                                segments = defaultdict(list)
+
+                                for row in rows:
+                                    segments[row.segment_name].append(row)
+                                pass
+                                ]]
+
+                                [[for segment_name, brand_list in segments.items():]]
+                                    <tr class="rowClass bg-light"> 
+                                    <td class="row-index text-left" colspan="9"> 
+                                        [[=segment_name]]
+                                                              
+                                    </td>
+                                    </tr>
+                                    
+                                    [[for brand in brand_list:]]
+                                        
+
+                                <tr class="rowClass"> 
+                                    <td class="row-index text-left" style="width:100px"> 
+                                        <div class="col-md-12" >
+                                            <div class="">
+                                                [[=brand.name]]
+                                                <input type="hidden" class="form-control form-control-sm no-spinner brand_name" name="brand_name" value="[[=brand.id]]" style="text-align:right">
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left" style="width:100px"> 
+                                        <div class="col-md-12" >
+                                            <div class="">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number collection" name="collection_[[=brand.id]]" style="text-align:right" autocomplete="off"> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left" style="width:100px"> 
+                                        <div class="col-md-12" >
+                                            <div class="">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number money_receipt" name="money_receipt_[[=brand.id]]" style="text-align:right" autocomplete="off"> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left" style="width:100px"> 
+                                        <div class="col-md-12" >
+                                            <div class="">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number advance_receipt" name="advance_receipt_[[=brand.id]]" style="text-align:right" autocomplete="off"> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left" style="width:100px"> 
+                                        <div class="col-md-12" >
+                                            <div class="">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number srt_ex_receipt" name="srt_ex_receipt_[[=brand.id]]" style="text-align:right" autocomplete="off"> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left" style="width:100px"> 
+                                        <div class="col-md-12" >
+                                            <div class="">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number adv_adjustment" name="adv_adjustment_[[=brand.id]]" style="text-align:right" autocomplete="off"> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left" style="width:100px"> 
+                                        <div class="col-md-12" >
+                                            <div class="">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number adv_adjustment_plus" name="adv_adjustment_plus_[[=brand.id]]" style="text-align:right" autocomplete="off"> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left" style="width:100px"> 
+                                        <div class="col-md-12" >
+                                            <div class="">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number adv_adjustment_minus" name="adv_adjustment_minus_[[=brand.id]]" style="text-align:right" autocomplete="off"> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                    <td class="row-index text-left" style="width:100px"> 
+                                        <div class="col-md-12" >
+                                            <div class="">
+                                                <input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number mr_reverse" name="mr_reverse_[[=brand.id]]" style="text-align:right" autocomplete="off"> 
+                                            </div>
+                                        </div>                     
+                                    </td>     
+                                                                    
+                                </tr>
+                                [[pass]]
+                                [[pass]]
+                            </tbody>
+                        </table>
+                    </div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-start">
+                        <div class="me-2">
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i class="fa-regular fa-floppy-disk"></i> <span class="ms-2">Post</span>
+                            </button>
+                        </div>
+                        <div class="">
+                            <button type="reset" class="btn btn-sm btn-light">
+                                <i class="fa-solid fa-retweet"></i> <span class="ms-2">Reset</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </form>
+    </div>
+
+</div>
+[[end]]
+[[block scripts]]
+<!-- individual pages can add scripts here -->
+<script>    
+    $(document).ready(function() {    
+        var active_date = "[[=active_date]]";  
+        var expire_at = "[[=expire_at]]";
+        var current_date = "[[=str(date_time_list['current_date'])]]";
+
+        var active_date_arr = [];
+        if (expire_at == current_date) {
+            active_date_arr = active_date.split(',').map(function(dateStr) {
+                var date = new Date(dateStr.trim());
+                var yyyy = date.getFullYear();
+                var mm = String(date.getMonth() + 1).padStart(2, '0');
+                var dd = String(date.getDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;   // always Y-m-d
+            });
+        } else {
+            console.log('not today');
+        }
+
+        // Collect backDate → today
+        const dates = new Set();
+        const today = new Date();
+        const backDate = new Date(today);
+        
+        "[[if session.get('role') !='super_admin':]]"
+        backDate.setDate(today.getDate() - 3);
+        "[[pass]]"
+        console.log('Back Date:', backDate);
+        // Helper: format date as Y-m-d
+        function formatYMD(d) {
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        // Add backDate → today (Y-m-d format)
+        for (let d = new Date(backDate); d <= today; d.setDate(d.getDate() + 1)) {
+            dates.add(formatYMD(new Date(d)));
+        }
+
+        // Merge & unique
+        const mergedDates = [...active_date_arr, ...Array.from(dates)];
+        const activeDates = [...new Set(mergedDates)];
+
+        "[[if session.get('role') !='super_admin':]]"
+        flatpickr("#transaction_date", {
+            dateFormat: "Y-m-d",   // actual value
+            altInput: true,
+            altFormat: "d-M-Y",    // show to user
+            enable: activeDates,   // must be Y-m-d
+            allowInput: true,
+        });
+        "[[pass]]"
+
+    });
+
+    
+
+</script>
+
+
+[[end]]

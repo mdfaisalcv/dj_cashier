@@ -1,0 +1,353 @@
+{% extends 'layout.html' %}
+
+{% block header %}
+{% with icon='fa fa-chart-line' breadcamp='Open Date' %}
+{{ block.super }}
+{% endwith %}
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container-section">
+    <div class="row">
+
+        <div class="col-md-1 mt-2 mb-2">
+            <span class="icon-text icon-text-bold">
+                <i class="fa-solid fa-table-list"></i>
+                <span>Table</span>
+            </span>
+        </div>
+
+        <div class="col-md-9 mt-2">
+            <div class="row" id="custom_form" style="display: none;">
+                <!-- Filter  Section  start -->
+
+                <div class="col-md-8 mb-2">
+                    <div class="row">
+
+                        <div class="col-md-4">
+                            <div class="">
+                                <select class="form-select form-select-sm select_custom" name="branch_name"
+                                    style="width: 200px;" placeholder="Select Branch">
+                                    <option value="">Select Branch</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="">
+                                <select class="form-select form-select-sm select_custom" name="user_name"
+                                    placeholder="Select User Name" title="Select User Name">
+                                    <option value="">Select User Name</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="">
+                                <select class="form-select form-select-sm select_custom" name="status"
+                                    style="width: 200px;" placeholder="Select Status">
+                                    <option value="">Select Status</option>
+                                    <option value="1">Active</option>
+                                    <option value="0">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Filter Section  if you need more then add after below section-->
+
+
+
+
+
+                <!-- Keep this fixed for first row last 4 column -->
+                <div class="col-md-4 mb-2 d-flex justify-content-end">
+                    <div class="me-2">
+                        <button type="submit" id="submit" class="btn btn-sm btn-primary" style="width:90px;">
+                            <i class="fa-solid fa-magnifying-glass"></i> <span class="ms-2">Search</span>
+                        </button>
+                    </div>
+                    <div class="">
+                        <button type="reset" id="reset" class="btn btn-sm btn-light" style="width:90px;">
+                            <i class="fa-solid fa-retweet"></i> <span class="ms-2">Reset</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Keep this fixed for first row last 4 column -->
+
+
+
+
+                <!-- If you need more than 4 filter than add this section -->
+
+
+
+
+                <!-- If you need more than 4 filter than add this section -->
+
+
+            </div>
+        </div>
+
+        <div class="col-md-2 mt-2 mb-2">
+            <div class="d-flex justify-content-end">
+                <div class="me-2">
+                    <button type="submit" id="filter" class="btn btn-sm btn-light" style="width:90px;">
+                        <i class="fa-solid fa-filter"></i> <span class="ms-2">Filter</span>
+                    </button>
+                </div>
+
+                <div class="dropdown">
+                    <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false" style="width:90px;">
+                        Action
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="{% url 'cashier:open_date-create' %}"><i
+                                class="fas fa-add me-1"></i>
+                            Add</a>
+                        <button class="dropdown-item" id="ExportExcel"><i class="fas fa-cog me-1"></i> Excel</button>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="table-responsive">
+
+
+        <table id="myTable" class="table table-bordered compact table-striped" style="width:100%">
+            <thead>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+
+    </div>
+
+</div>
+{% endblock %}
+{% block scripts %}
+<!-- individual pages can add scripts here -->
+<script src="https://cdn.datatables.net/rowgroup/1.5.1/js/dataTables.rowGroup.js"></script>
+<script src="https://cdn.datatables.net/rowgroup/1.5.1/js/rowGroup.dataTables.js"></script>
+<script>
+    $(document).ready(function () {
+
+
+        $.ajax({
+            url: '{% url "cashier:get_branch_name" %}', // Replace with your endpoint
+            method: 'GET',
+            data: { q: '' },
+            dataType: 'json',
+            success: function (data) {
+
+                $("[name='branch_name']").empty().append('<option value="">Select Branch Name</option>');;
+                $("[name='branch_name']").select2({
+                    data: data['results'],
+                    placeholder: "Select Branch Name",
+                    allowClear: true
+                });
+
+            }
+        });
+        $.ajax({
+            url: '{% url "cashier:get_user_name" %}', // Replace with your endpoint
+            method: 'GET',
+            data: { q: '' },
+            dataType: 'json',
+            success: function (data) {
+
+                $("[name='user_name']").empty().append('<option value="">Select User Name</option>');;
+                $("[name='user_name']").select2({
+                    data: data['results'],
+                    placeholder: "Select User Name",
+                    allowClear: true
+                });
+
+            }
+        });
+    });
+    $("#filter").click(function (e) {
+        // $("#custom_form").toggleClass("d-none");
+        $("#custom_form").fadeToggle("slow");
+    });
+
+    // Datatable ############################################################
+
+    var table = $('#myTable').DataTable({
+        dom: "Bfrt<'d-flex justify-content-between'<l><i><p>>",
+
+        buttons: [
+            {
+                extend: 'excel',
+                title: 'Open Data',
+                filename: 'Open_Data',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                }
+            }
+        ],
+
+        processing: true,
+        serverSide: true,
+        searching: false,
+        paging: true,
+
+        order: [[0, 'asc']],
+
+        lengthMenu: [
+            [16, 50, 100, -1],
+            [16, 50, 100, 'All']
+        ],
+
+        ajax: {
+            url: '{% url "cashier:open_date-get_data" %}',
+            type: 'GET',
+
+            data: function(d) {
+                d.branch_name = $("select[name='branch_name']").val() || '';
+                d.user_name = $("select[name='user_name']").val() || '';
+                d.status = $("select[name='status']").val() || '';
+            },
+
+            dataSrc: function(json) {
+                console.log('DataTables Response:', json);
+                return json.data;
+            },
+
+            error: function(xhr, error, thrown) {
+                console.log('Status:', xhr.status);
+                console.log('Response:', xhr.responseText);
+                console.log('Error:', error);
+                console.log('Thrown:', thrown);
+            }
+        },
+
+        columns: [
+
+            {
+                title: 'TDCL Branch',
+                data: 'branch_name'
+            },
+
+            {
+                title: 'User',
+                data: 'user_name'
+            },
+
+            {
+                title: 'Allow Entry Date',
+                data: 'active_date'
+            },
+
+            {
+                title: 'Expire At',
+                data: 'expire_at',
+
+                render: function(data, type, row) {
+
+                    if (!data) {
+                        return '';
+                    }
+
+                    // Sort করার সময় original date রাখবে
+                    if (type === 'sort' || type === 'type') {
+                        return data;
+                    }
+
+                    const dateObj = new Date(data + 'T00:00:00');
+
+                    const day = String(
+                        dateObj.getDate()
+                    ).padStart(2, '0');
+
+                    const monthNames = [
+                        "Jan", "Feb", "Mar", "Apr",
+                        "May", "Jun", "Jul", "Aug",
+                        "Sep", "Oct", "Nov", "Dec"
+                    ];
+
+                    const month = monthNames[
+                        dateObj.getMonth()
+                    ];
+
+                    const year = dateObj.getFullYear();
+
+                    return `${day}-${month}-${year}`;
+                }
+            },
+
+            {
+                title: 'Status',
+                data: 'status',
+                orderable: false,
+
+                render: function(data) {
+
+                    if (String(data) === '1') {
+                        return `
+                            <div class="badge bg-success fw-bold">
+                                ACTIVE
+                            </div>
+                        `;
+                    }
+
+                    return `
+                        <div class="badge bg-secondary fw-bold">
+                            INACTIVE
+                        </div>
+                    `;
+                }
+            },
+
+            {
+                title: '',
+                data: 'id',
+                orderable: false,
+
+                render: function(data) {
+
+                    return `
+                        <a class="text-secondary"
+                        href="{% url 'cashier:open_date-edit' %}?id=${data}">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    `;
+                }
+            }
+        ]
+    });
+
+    $("#submit").click(function (e) {
+        e.preventDefault();
+        table
+            .clear()
+            .draw();
+    });
+
+    $("#reset").click(function (e) {
+        e.preventDefault();
+        $("input,select").val(null);
+        $('.select_custom').each(function () {
+            var placeholder = $(this).attr('placeholder');
+            $(this).select2({
+                // dropdownParent: $("#custom_form"),
+                placeholder: placeholder,
+                allowClear: true,
+            });
+        });
+        table.clear().draw();
+    });
+    // Datatable ############################################################
+
+
+
+</script>
+{% endblock %}

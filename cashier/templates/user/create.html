@@ -1,0 +1,168 @@
+{% extends 'layout.html' %}
+
+{% block header %}
+    {% with icon='fa fa-users' breadcamp='Users' %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+
+{% block content %}
+<div class="container-section">
+    <div class="d-flex justify-content-between align-items-center border-bottom">
+        <span class="icon-text icon-text-bold">
+            <i class="fa-solid fa-plus"></i>
+            <span>Create</span>
+        </span>
+
+        <div class="d-flex justify-content-end">
+            <div class="p-1">
+                <a href="{% url 'cashier:user-index' %}" class="btn btn-sm btn-light">
+                    <i class="fa-solid fa-arrow-left"></i> <span class="ms-2">Back</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="container py-2">
+
+        <form action="{% url 'cashier:user-submit' %}" method="POST">
+            {% csrf_token %}
+        <div id="custom_form">        
+            <div class="row"> 
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+                        <input type="text" id="first_name" name="first_name" class="form-control form-control-sm">
+                    </div>
+                </div>                
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
+                        <input type="text" id="last_name" name="last_name" class="form-control form-control-sm">
+                    </div>
+                </div>                
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="user_name" class="form-label">User Name <span class="text-danger">*</span></label>
+                        <input type="text" id="user_name" name="user_name" class="form-control form-control-sm">
+                    </div>
+                </div>                
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                        <input type="email" id="email" name="email" class="form-control form-control-sm">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="pass" class="form-label">Password <span class="text-danger">*</span></label>
+                        <input type="password" id="pass" name="pass" class="form-control form-control-sm" placeholder="At least 8 characters">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="pass_confirmation" class="form-label">Password Confirmation <span class="text-danger">*</span></label>
+                        <input type="password" id="pass_confirmation" name="pass_confirmation" class="form-control form-control-sm">
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
+                        <select class="select_custom form-control form-select-sm selectChange" name="role" id="role">
+                            <option value="">--Select--</option>
+                            {% for group in groups %}
+                                {% if group.name != 'Superadmin' %}
+                                    <option value="{{ group.name }}">{{ group.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3"></div>
+                <div class="col-md-10">
+                    <div class="mb-3" >
+                        <label for="cid" class="form-label">TDCL Branch <span class="text-danger">*</span></label>                                                 
+                        <select class="select_custom form-control form-select-sm selectChange" name="branch_list" id="branch_list" multiple>
+                            <option value="">--Select--</option>
+                            {% for row in branchList %}
+                            <option value="{{ row.id }}">{{ row.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-center" style="margin-top: 28px;">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="selectAll">
+                            <label class="form-check-label" for="selectAll">Select All</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" checked id="status" name="status">
+                            <label class="form-check-label" for="status">
+                              Active
+                            </label>
+                        </div>
+                    </div>                    
+                </div>                
+              
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-start">
+                        <div class="me-2">
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i class="fa-regular fa-floppy-disk"></i> <span class="ms-2">Save</span>
+                            </button>
+                        </div>
+                        <div class="">
+                            <button type="reset" class="btn btn-sm btn-light">
+                                <i class="fa-solid fa-retweet"></i> <span class="ms-2">Reset</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
+{% block scripts %}
+<!-- individual pages can add scripts here -->
+  <script>
+    $(document).ready(function() {
+
+        //  Select/Deselect all banks when checkbox changes
+        $('#selectAll').on('change', function() {
+            if ($(this).is(':checked')) {
+                $('#branch_list option[value!=""]').prop('selected', true);
+            } else {
+                $('#branch_list option').prop('selected', false);
+            }
+            $('#branch_list').trigger('change'); // important for select2
+        });
+
+        //  Listen for changes in the dropdown
+        $('#branch_list').on('change', function() {
+            let total = $('#branch_list option[value!=""]').length;   // all real options
+            let selected = $('#branch_list option:selected').length; // how many selected
+
+            // If all options are selected, check Select All
+            // Else uncheck it
+            if (selected === total && total > 0) {
+                $('#selectAll').prop('checked', true);
+            } else {
+                $('#selectAll').prop('checked', false);
+            }
+        });
+
+    });
+</script>
+{% endblock %}

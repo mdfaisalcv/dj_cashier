@@ -1,0 +1,316 @@
+{% extends 'layout.html' %}
+
+{% block header %}
+    {% with icon='fa fa-chart-line' breadcamp='Branch' %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container-section" >
+    <div class="row">
+
+        <div class="col-md-1 mt-2 mb-2">            
+            <span class="icon-text icon-text-bold">
+                <i class="fa-solid fa-table-list"></i>
+                <span>Table</span>
+            </span>
+        </div>
+
+        <div class="col-md-9 mt-2">
+            <div class="row" id="custom_form" style="display:none;">
+                <!-- Filter  Section  start -->
+
+                <div class="col-md-8 mb-2">
+                    <div class="row">
+
+                        <div class="col-md-4">
+                            <div class="">
+                                <select class="form-select form-select-sm select_custom" name="branch_code" style="width: 200px;" placeholder="Select Code">
+                                    <option value="">Select Code</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="">
+                                <select class="form-select form-select-sm select_custom" name="branch_name" style="width: 200px;" placeholder="Select Branch">
+                                    <option value="">Select Branch</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div  class="">
+                                <select class="form-select form-select-sm select_custom" name="status" style="width: 200px;" placeholder="Select Status">
+                                    <option value="">Select Status</option>
+                                    <option value="1">Active</option>
+                                    <option value="0">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Filter Section  if you need more then add after below section-->
+
+
+
+
+
+                <!-- Keep this fixed for first row last 4 column -->
+                <div class="col-md-4 mb-2 d-flex justify-content-end">
+                    <div class="me-2">
+                        <button type="submit" id="submit" class="btn btn-sm btn-primary" style="width:90px;">
+                            <i class="fa-solid fa-magnifying-glass"></i> <span class="ms-2">Search</span>
+                        </button>
+                    </div>
+                    <div class="">
+                        <button type="reset" id="reset" class="btn btn-sm btn-light" style="width:90px;">
+                            <i class="fa-solid fa-retweet"></i> <span class="ms-2">Reset</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Keep this fixed for first row last 4 column -->
+
+
+
+
+                <!-- If you need more than 4 filter than add this section -->                
+            
+
+
+
+                <!-- If you need more than 4 filter than add this section -->
+
+
+            </div>       
+        </div>
+
+        <div class="col-md-2 mt-2 mb-2">
+            <div class="d-flex justify-content-end" >                
+                <div class="me-2">
+                    <button type="submit" id="filter" class="btn btn-sm btn-light" style="width:90px;">
+                        <i class="fa-solid fa-filter"></i> <span class="ms-2">Filter</span>
+                    </button>
+                </div>
+
+                <div class="dropdown">
+                    <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false" style="width:90px;">
+                        Action
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="{% url 'cashier:branch-create' %}"><i class="fas fa-add me-1"></i>
+                            Add</a>
+                        <button class="dropdown-item" id="ExportExcel"><i class="fas fa-cog me-1"></i> Excel</button>
+
+                    </div> 
+                </div>
+            </div>
+        
+        </div>
+
+    </div>
+
+    
+    <div class="table-responsive">
+      
+
+        <table id="myTable" class="table table-bordered compact table-striped" style="width:100%">
+            <thead>
+            </thead>
+            <tbody></tbody>
+        </table>
+        
+
+    </div>
+    
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- individual pages can add scripts here -->
+<script src="https://cdn.datatables.net/rowgroup/1.5.1/js/dataTables.rowGroup.js"></script>
+<script src="https://cdn.datatables.net/rowgroup/1.5.1/js/rowGroup.dataTables.js"></script>
+<script>
+    $(document).ready(function() {                         
+        $.ajax({
+            url: '{% url "cashier:get_branch_code" %}', // Replace with your endpoint
+            method: 'GET',
+            data: { q:''},
+            dataType: 'json',
+            success: function(data) {  
+
+                $("[name='branch_code']").empty().append('<option value="">Select Code</option>');;
+                $("[name='branch_code']").select2({
+                    data: data['results'],
+                    placeholder: "Select Code",
+                    allowClear: true
+                });
+            }
+        });    
+                
+        $.ajax({
+            url: '{% url "cashier:get_branch_name" %}', // Replace with your endpoint
+            method: 'GET',
+            data: { q:''},
+            dataType: 'json',
+            success: function(data) {    
+
+                $("[name='branch_name']").empty().append('<option value="">Select Branch</option>');;
+                $("[name='branch_name']").select2({
+                    data: data['results'],
+                    placeholder: "Select Branch",
+                    allowClear: true
+                });
+            }
+        });   
+    });
+    $("#filter").click(function(e){
+        // $("#custom_form").toggleClass("d-none");
+        $("#custom_form").fadeToggle("slow");
+    });
+
+// Datatable ############################################################
+
+var table = $('#myTable').DataTable({
+        dom: "Bfrt<'d-flex justify-content-between'<l><i><p>>",
+        buttons: [
+            {
+                extend: 'excel',
+                title: 'Branch Data',
+                filename: 'Branch_Data',
+                exportOptions: {
+                    columns: [ 0,1,2,3,4,5,6]
+                },
+            }
+        ],
+        order: [0, 'desc'],
+        searching:false,
+
+        processing: true,
+        paging: true,
+        serverSide: true,
+        scrollCollapse: false,
+        scrollX: true,
+        scrollY: "413px",
+        fixedHeader: true,
+        fixedColumns: {
+            left: 1, // No left columns fixed
+            right: 1 // Fix the last column
+        },    
+        lengthMenu: [
+        [16, 50, 100, -1],
+        [16, 50, 100, 'All']
+        ],
+        language: {
+            loadingRecords: "" // Removes the default "Loading..." message
+        },
+        ajax: {
+            async: true,
+            type: 'GET',
+            url: '{% url "cashier:branch-get_data" %}',
+            data: function (d) {
+                d.code = $("select[name='branch_code']").val();
+                d.name = $("select[name='branch_name']").val();
+                d.status = $("select[name='status']").val();
+            },
+            dataSrc: 'data'
+        },
+        columns: [
+        
+            // {
+            //     title: 'SN',
+            //     data: 'id'
+            // },            
+            {
+                title: 'Code',
+                data: 'code'
+            },            
+            {
+                title: 'Name',
+                data: 'name'
+            },          
+            {
+                title: 'Short Name',
+                data: 'short_name'
+            },            
+            {
+                title: 'Email',
+                data: 'email'
+            },            
+            {
+                title: 'Address',
+                data: 'address'
+            },            
+            {
+                title: 'Banks',
+                data: 'bank_short_name',
+                orderable:false,
+                render: function (data, type, row) {
+                    if (data && data.trim() !== '') {
+                        let banks = data.split(',');
+                        let badges = banks.map((bank, index) => {
+                            // add a <br> after every 5 badges
+                            let badge = `<div class='badge bg-info fw-bold m-1 d-inline'>${bank.trim()}</div>`;
+                            if ((index + 1) % 5 === 0) {
+                                badge += `<br>`;
+                            }
+                            return badge;
+                        });
+                        return badges.join('');
+                    } else {
+                        return `<div class='badge bg-secondary fw-bold m-1 d-inline'>INACTIVE</div>`;
+                    }
+                }
+            },            
+            {
+                title: 'Status',
+                data: 'status',
+                orderable:false,
+                render: function (data, type, row) {
+                    return `<div class='badge ${data == 1 ? 'bg-success' : 'bg-secondary'} fw-bold'>${data == 1 ? 'ACTIVE' : 'INACTIVE'}</div>`
+
+                }
+            },
+            {
+                title: '',
+                data: 'id',
+                render: function (data, type, row) {
+                    return `<a class="text-secondary" href="{% url 'cashier:branch-edit' %}?id=${data}"><i class="fas fa-edit"></i></a>`;
+
+                }
+            },
+        ],
+        });
+
+        
+
+    $("#submit").click(function(e){
+      e.preventDefault();
+      table
+    .clear()
+    .draw();
+    });
+
+    $("#reset").click(function(e){
+        e.preventDefault();
+        $("input,select").val(null);
+        $('.select_custom').each(function() {
+            var placeholder = $(this).attr('placeholder');
+            $(this).select2({
+                // dropdownParent: $("#custom_form"),
+                placeholder: placeholder,
+                allowClear: true,
+            });
+        });
+        table.clear().draw();
+    });
+    // Datatable ############################################################
+
+
+    
+</script>
+{% endblock %}

@@ -1,0 +1,264 @@
+[[extend 'layout_landscape.html']]
+
+[[block header]]
+[[icon='fa fa-chart-line']]
+[[breadcamp = 'MR & Deposit Reconciliation Report']]
+[[end]]
+
+
+[[block content]]
+<div class="container-section">
+    <div class="d-flex justify-content-between align-items-center">
+        
+        <div class="d-flex justify-content-end">
+            <div class="p-1">
+                <div class="dropdown">
+                    
+                    <style>
+                        .cu-filter-value-list-dropdown__title {
+                            font-weight: 500;
+                            font-size: 1rem;
+                            line-height: 1.25;
+                            margin-top: 2px;
+                            position: relative;
+                            color: rgb(79, 87, 98);
+                            text-decoration: none;
+                            z-index: 10;
+                        }
+                    </style>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row ">
+            <div class="row mb-3 align-items-center">
+                <div class="col-md-3"></div>
+                <div class="col-md-6 text-center">
+                    <p class="mb-0" style="font-size: 18px">
+                        Branch Name : <strong>[[=branch_name]]</strong>
+                        <br>
+                        <span style="font-size: 11px">
+                            1.1 MR &amp; Deposit Reconciliation Report
+                            <br>
+                            Date: [[=startDate]] to [[=endDate]]
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-3 text-end">
+                    <a class="btn btn-success btn-sm me-1" href="[[=URL('report', 'download_mr_deposit_report')]]">
+                        <i class="fa fa-download"></i> Download
+                    </a>
+                    <button class="btn btn-secondary btn-sm" id="btnPrint" ><i class="fa fa-print"></i> Print</button>
+                </div>
+            </div>
+            <div  id="printThis">
+                <style>
+                @media print {
+                #tr_table, #tr_table th, #tr_table tr, #tr_table td {
+                    border: 1px solid black !important;
+                }
+                #printThis, #printThis * {
+                    font-size: 8px !important;
+                }
+                #printThis table th, #printThis table td {
+                    padding: 1px 2px !important;
+                }
+                }
+                </style>
+                <!-- Print-only header (hidden on screen, visible in print) -->
+                <div class="print-header d-none d-print-block text-center mb-2">
+                    <strong style="font-size: 13pt;">Branch Name : [[=branch_name]]</strong><br>
+                    <span style="font-size: 9pt;">
+                        1.1 MR &amp; Deposit Reconciliation Report &nbsp;|&nbsp;
+                        Date: [[=startDate]] to [[=endDate]]
+                    </span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm" style="width:100%" id="myTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="text-align: center;">Date</th>
+                                <th style="text-align: center;">Opening Balance</th>
+                                <th style="text-align: center;">Total MR</th>
+                                <th style="text-align: center;">MR Reverse</th>
+                                <th style="text-align: center;">Pharma Adv.</th>
+                                <th style="text-align: center;">Pharma Adj.</th>
+                                <th style="text-align: center;">CBD Adv.</th>
+                                <th style="text-align: center;">CBD Adj.</th>
+                                <th style="text-align: center;">Diagnostic Adv.</th>
+                                <th style="text-align: center;">Diagnostic Adj.</th>
+                                <th style="text-align: center;">Short Receipt</th>
+                                <th style="text-align: center;">Total Deposit</th>
+                                <th style="text-align: center;">Closing Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            [[total_opening_balance = 0]]
+                            [[total_total_mr = 0]]
+                            [[total_mr_reverse = 0]]
+                            [[total_pharma_plus = 0]]
+                            [[total_pharma_minus = 0]]
+                            [[total_cbd_plus = 0]]
+                            [[total_cbd_minus = 0]]
+                            [[total_diagnostic_plus = 0]]
+                            [[total_diagnostic_minus = 0]]
+                            [[total_short_receipt = 0]]
+                            [[total_total_deposit = 0]]
+                            [[total_closing_balance = 0]]
+                            [[for row in recordList:]]
+                            [[total_opening_balance += row['opening_balance'] if row['opening_balance'] else 0]]
+                            [[total_total_mr += row['total_mr'] if row['total_mr'] else 0]]
+                            [[total_mr_reverse += row['mr_reverse'] if row['mr_reverse'] else 0]]
+                            [[total_pharma_plus += row['pharma_plus'] if row['pharma_plus'] else 0]]
+                            [[total_pharma_minus += row['pharma_minus'] if row['pharma_minus'] else 0]]
+                            [[total_cbd_plus += row['cbd_plus'] if row['cbd_plus'] else 0]]
+                            [[total_cbd_minus += row['cbd_minus'] if row['cbd_minus'] else 0]]
+                            [[total_diagnostic_plus += row['diagnostic_plus'] if row['diagnostic_plus'] else 0]]
+                            [[total_diagnostic_minus += row['diagnostic_minus'] if row['diagnostic_minus'] else 0]]
+                            [[total_short_receipt += row['short_receipt'] if row['short_receipt'] else 0]]
+                            [[total_total_deposit += row['total_deposit'] if row['total_deposit'] else 0]]
+                            [[total_closing_balance += row['closing_balance'] if row['closing_balance'] else 0]]
+                            <tr>
+                                <td style="text-align: center;">[[=row['trans_date']]]</td>
+                                <td style="text-align: right; color: green;">[[if row['opening_balance']==None:]]0.00[[else:]][[=easy_format(row['opening_balance'])]][[pass]]</td>
+                                <td style="text-align: right; color: green;">[[if row['total_mr']==None:]]0.00[[else:]][[=easy_format(row['total_mr'])]][[pass]]</td>
+                                <td style="text-align: right; color: red;">[[if row['mr_reverse']==None:]]0.00[[else:]][[=easy_format(row['mr_reverse'])]][[pass]]</td>
+                                <td style="text-align: right; color: green;">[[if row['pharma_plus']==None:]]0.00[[else:]][[=easy_format(row['pharma_plus'])]][[pass]]</td>
+                                <td style="text-align: right; color: red;">[[if row['pharma_minus']==None:]]0.00[[else:]][[=easy_format(row['pharma_minus'])]][[pass]]</td>
+                                <td style="text-align: right; color: green;">[[if row['cbd_plus']==None:]]0.00[[else:]][[=easy_format(row['cbd_plus'])]][[pass]]</td>
+                                <td style="text-align: right; color: red;">[[if row['cbd_minus']==None:]]0.00[[else:]][[=easy_format(row['cbd_minus'])]][[pass]]</td>
+                                <td style="text-align: right; color: green;">[[if row['diagnostic_plus']==None:]]0.00[[else:]][[=easy_format(row['diagnostic_plus'])]][[pass]]</td>
+                                <td style="text-align: right; color: red;">[[if row['diagnostic_minus']==None:]]0.00[[else:]][[=easy_format(row['diagnostic_minus'])]][[pass]]</td>
+                                <td style="text-align: right; color: green;">[[if row['short_receipt']==None:]]0.00[[else:]][[=easy_format(row['short_receipt'])]][[pass]]</td>
+                                <td style="text-align: right; color: red;">[[if row['total_deposit']==None:]]0.00[[else:]][[=easy_format(row['total_deposit'])]][[pass]]</td>
+                                <td style="text-align: right; font-weight: bold;">[[if row['closing_balance']==None:]]0.00[[else:]][[=easy_format(row['closing_balance'])]][[pass]]</td>
+                            </tr>
+                            [[pass]]    
+                            <tr class="bg-info fw-bold text-white">
+                                <td style="text-align: right;" colspan="2">Total</td>
+                                <td style="text-align: right;">[[=easy_format(total_total_mr)]]</td>
+                                <td style="text-align: right;">[[=easy_format(total_mr_reverse)]]</td>
+                                <td style="text-align: right;">[[=easy_format(total_pharma_plus)]]</td>
+                                <td style="text-align: right;">[[=easy_format(total_pharma_minus)]]</td>
+                                <td style="text-align: right;">[[=easy_format(total_cbd_plus)]]</td>
+                                <td style="text-align: right;">[[=easy_format(total_cbd_minus)]]</td>
+                                <td style="text-align: right;">[[=easy_format(total_diagnostic_plus)]]</td>
+                                <td style="text-align: right;">[[=easy_format(total_diagnostic_minus)]]</td>
+                                <td style="text-align: right;">[[=easy_format(total_short_receipt)]]</td>
+                                <td style="text-align: right;">[[=easy_format(total_total_deposit)]]</td>
+                                <td style="text-align: right;"></td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+                </div>
+                <br><br><br>
+                <div class="print-header d-none d-print-block text-center mb-4">
+                    <table width="100%">
+                        <tr>
+                            <td width="33%" align="center">___________________________________</td>
+                            <td width="33%" align="center">___________________________________</td>
+                            <td width="33%" align="center">___________________________________</td>
+                        </tr>
+                        <tr>
+                            <td width="33%" align="center"><strong>Prepared By</strong></td>
+                            <td width="33%" align="center"><strong>Checked By</strong></td>
+                            <td width="33%" align="center"><strong>Approved By</strong></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+[[end]]
+[[block scripts]]
+<!-- individual pages can add scripts here -->
+<script>
+    $(document).ready(function () {
+        $('#btnPrint').on('click', function () {
+        
+        var printContents = $('#printThis').clone();
+        var originalContents = $('body').clone();
+
+        $('body').empty().html(printContents);
+        window.print();
+        $('body').html(originalContents);
+        window.location.reload();
+        });
+    });
+
+        // Escape a single CSV field: wrap in quotes if it contains comma, quote, or newline
+    // function csvEscape(value) {
+    //     var str = (value === null || value === undefined) ? '' : String(value).trim();
+    //     if (str.indexOf(',') !== -1 || str.indexOf('"') !== -1 || str.indexOf('\n') !== -1) {
+    //         str = '"' + str.replace(/"/g, '""') + '"';
+    //     }
+    //     return str;
+    // }
+ 
+    // Build a CSV string from an HTML table and trigger a file download
+    // function exportTableToExcel(tableId) {
+    //     var table = document.getElementById(tableId);
+    //     if (!table) {
+    //         alert('Table not found: ' + tableId);
+    //         return;
+    //     }
+ 
+    //     var csvRows = [];
+ 
+    //     // Optional context header rows (branch / date range), if present on the page
+    //     var branchName = $('.print-header strong').first().text() || $('p strong').first().text();
+    //     var dateInfo = $('.print-header span').first().text() || $('p span').first().text();
+    //     if (branchName) {
+    //         csvRows.push([csvEscape(branchName.replace(/\s+/g, ' ').trim())].join(','));
+    //     }
+    //     if (dateInfo) {
+    //         csvRows.push([csvEscape(dateInfo.replace(/\s+/g, ' ').trim())].join(','));
+    //     }
+    //     if (branchName || dateInfo) {
+    //         csvRows.push(''); // blank line before the table data
+    //     }
+ 
+    //     var rows = table.querySelectorAll('tr');
+    //     rows.forEach(function (row) {
+    //         var cells = row.querySelectorAll('th, td');
+    //         var rowData = [];
+    //         cells.forEach(function (cell) {
+    //             rowData.push(csvEscape(cell.innerText));
+    //         });
+    //         csvRows.push(rowData.join(','));
+    //     });
+ 
+    //     var csvContent = csvRows.join('\r\n');
+ 
+    //     // Add BOM so Excel opens UTF-8 CSV correctly (helps with any non-ASCII text)
+    //     var blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+ 
+    //     var link = document.createElement('a');
+    //     var fileName = 'MR_Deposit_Reconciliation_' + new Date().toISOString().slice(0, 10) + '.csv';
+ 
+    //     if (navigator.msSaveBlob) {
+    //         // IE 10+
+    //         navigator.msSaveBlob(blob, fileName);
+    //     } else {
+    //         var url = URL.createObjectURL(blob);
+    //         link.setAttribute('href', url);
+    //         link.setAttribute('download', fileName);
+    //         link.style.visibility = 'hidden';
+    //         document.body.appendChild(link);
+    //         link.click();
+    //         document.body.removeChild(link);
+    //         URL.revokeObjectURL(url);
+    //     }
+    // }
+
+</script>
+
+
+[[end]]

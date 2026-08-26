@@ -1,0 +1,415 @@
+[[extend 'layout.html']]
+
+[[block header]]
+[[icon='fa fa-chart-line']]
+[[breadcamp = 'Report']]
+[[end]]
+
+
+[[block content]]
+<div class="container-section">
+    <div class="d-flex justify-content-between align-items-center">
+
+        <!-- <span class="icon-text icon-text-bold">
+            <i class="fa-solid fa-table-list"></i>
+            <span>Table</span>
+        </span> -->
+        <div class="d-flex justify-content-end">
+            <div class="p-1">
+                <div class="dropdown">
+                    <!-- <button class="btn btn-sm btn-light" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                        <i class="fa-solid fa-filter"></i> <span class="ms-2">Filter</span>
+                    </button> -->
+                    <!-- <ul class="dropdown-menu active" style="width: 500px;">
+                        <li> -->
+                    <style>
+                        .cu-filter-value-list-dropdown__title {
+                            font-weight: 500;
+                            font-size: 1rem;
+                            line-height: 1.25;
+                            margin-top: 2px;
+                            position: relative;
+                            color: rgb(79, 87, 98);
+                            text-decoration: none;
+                            z-index: 10;
+                        }
+                    </style>
+
+                    <!-- <div class="row mb-2">
+                                <h1 class="cu-filter-value-list-dropdown__title"><i class="fa-solid fa-filter"></i> Filter</h1>
+                            </div>       -->
+
+                    <!-- </li>
+                    </ul> -->
+                </div>
+            </div>
+            <!-- <div class="p-1">
+                <div class="btn-group">
+                    <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        Action
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="[[=URL('io/create')]]"><i class="fas fa-add me-1"></i>
+                            Create I/O</a>
+                        <a class="dropdown-item" href="#"><i class="fas fa-cog me-1"></i> Import</a>
+                        <a class="dropdown-item" href="#"><i class="fas fa-cog me-1"></i> Export</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+    </div>
+    <div class="container">
+        <form class="" action="[[=URL('report','index')]]" method="POST" target="_blank">
+            <p class="text-center fw-bold p-1 mb-1"
+                style="color: #4f5762; background-color: var(--master-primary-light) !important;">Statement</p>
+            <div id="custom_form">
+                <div class="mb-2"
+                    style="border: 1px solid rgb(232, 234, 237); border-radius: 5px ; background-color: rgb( 247, 248, 249);">
+                    <div class="row">
+                        <div class="col-md-7">
+                            <div class="mb-3">
+                                <label for="branch_list" class="form-label">Branch </label>
+                                <select class="select_custom form-control form-select-sm selectChange" name="branch"
+                                    id="branch" multiple="multiple">
+                                    <option value="">Select Branch </option>
+                                    [[for row in branchList:]]
+                                    <option value="[[=row.id]]">[[=row.name]]</option>
+                                    [[pass]]
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-1" style="margin-top: 28px;">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectAll">
+                                    <label class="form-check-label" for="selectAll"> All</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="segment" class="form-label">Segment </label>
+                                <select class="select_custom form-control form-select-sm selectChange" name="segment"
+                                    id="segment" multiple="multiple">
+                                    <option value="">Select Segment </option>
+                                    [[for row in segmentList:]]
+                                    <option value="[[=row.id]]">[[=row.name]]</option>
+                                    [[pass]]
+                                </select>
+                            </div>
+                        </div>
+                        <!-- d-flex align-items-center -->
+                        <div class="col-md-1 " style="margin-top: 28px;">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="segmentSelectAll">
+                                    <label class="form-check-label" for="segmentSelectAll"> All</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="mb-3">
+                                <label for="brand" class="form-label">Brand </label>
+                                <select class="select_custom form-control form-select-sm selectChange" name="brand"
+                                    id="brand" multiple="multiple">
+                                    <option value="">Select Brand </option>
+                                    [[for row in brandList:]]
+                                    <option value="[[=row.id]]">[[=row.name]]</option>
+                                    [[pass]]
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-1 " style="margin-top: 28px;">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="brandSelectAll">
+                                    <label class="form-check-label" for="brandSelectAll"> All</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="from_date" class="form-label">From Date</label>
+                                <div class="flatpickr-wrapper">
+                                    <input type="text" id="from_date" class="form-control form-control-sm date-picker"
+                                        name="from_date" placeholder="From Date" value="[[=month_first_date]]">
+                                    <i class="fa fa-calendar calendar-icon text-secondary calendar-toggle"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="to_date" class="form-label">To Date</label>
+                                <div class="flatpickr-wrapper">
+                                    <input type="text" id="to_date" class="form-control form-control-sm date-picker"
+                                        name="to_date" placeholder="To Date" value="[[=formatted_date]]">
+                                    <i class="fa fa-calendar calendar-icon text-secondary calendar-toggle"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="yearCombo" class="form-label">Year <span class="text-muted" style="font-size: 10px; font-weight: normal;">(for 5.1 report)</span></label>
+                                <select class="select_custom form-control" id="yearCombo" name="yearCombo">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label for="monthCombo" class="form-label">Month <span class="text-muted" style="font-size: 10px; font-weight: normal;">(for 5.1 report)</span></label>
+                                <select class="select_custom form-control" id="monthCombo" name="monthCombo">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-2">
+                    <input type="submit" class="btn btn-sm btn-light text-start w-100" name="mr_deposit_report_btn"
+                        value="1.1 MR & Deposit Report" />
+                </div>
+                <div class="col-md-4 mb-2">
+                    <input type="submit" class="btn btn-sm btn-light text-start w-100"
+                        name="collection_deposit_report_btn" value="1.2 Collection & Deposit Report" />
+                </div>
+                <div class="col-md-4 mb-2">
+                    <input type="submit" class="btn btn-sm btn-light text-start w-100"
+                        name="date_wise_imprest_money_cash_report_btn" value="2.1 Date Wise Imprest Money (Cash) Report" />
+                </div>
+                <div class="col-md-4 mb-2">
+                    <input type="submit" class="btn btn-sm btn-light text-start w-100"
+                        name="date_wise_imprest_money_bank_report_btn" value="2.2 Date Wise Imprest Money (Bank) Report" />
+                </div>
+                <div class="col-md-4 mb-2">
+                    <input type="submit" class="btn btn-sm btn-light text-start w-100"
+                        name="branch_wise_imprest_money_cash_reconciliation_report_btn" value="2.3 Branch Wise Imprest Money (Cash) Reconciliation Report" />
+                </div>
+                <div class="col-md-4 mb-2">
+                    <input type="submit" class="btn btn-sm btn-light text-start w-100"
+                        name="branch_wise_imprest_money_bank_reconciliation_report_btn" value="2.4 Branch Wise Imprest Money (Bank) Reconciliation Report" />
+                </div>
+                <div class="col-md-4 mb-2">
+                    <input type="submit" class="btn btn-sm btn-light text-start w-100"
+                        name="branch_wise_outstanding_report_btn" value="3.1 Branch Wise Outstanding Report" />
+                </div>
+                <div class="col-md-4 mb-2">
+                    <input type="submit" class="btn btn-sm btn-light text-start w-100"
+                        name="brand_wise_outstanding_reconciliation_report_btn" value="3.2 Brand Wise Outstanding Reconciliation Report" />
+                </div>
+                <div class="col-md-4 mb-2">
+                    <input type="submit" class="btn btn-sm btn-light text-start w-100"
+                        name="branch_brand_wise_outstanding_summary_report_btn" value="3.3 Branch & Brand Wise Outstanding Summary Report" />
+                </div>
+                <div class="col-md-4 mb-2">
+                    <input type="submit" class="btn btn-sm btn-light text-start w-100"
+                        name="brand_wise_collection_reconciliation_report_btn" value="4.1 Brand Wise Collection Reconciliation Report" />
+                </div>
+                <div class="col-md-4 mb-2">
+                    <input type="submit" class="btn btn-sm btn-light text-start w-100"
+                        name="consolidate_bank_reconciliation_statement_btn" value="5.1 Consolidate Bank Reconciliation Statement Report" />
+                </div>
+
+
+            </div>
+        </form>
+    </div>
+
+
+
+    <div class="table-responsive">
+        <table class="table table-bordered compact" style="width:100%" id="myTable">
+            <thead>
+
+            </thead>
+            <tbody>
+
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+[[end]]
+[[block scripts]]
+<!-- individual pages can add scripts here -->
+<script>
+    $(document).ready(function () {
+        $('#branch').select2({
+            width: '100%'
+        });
+        //  Select/Deselect all banks when checkbox changes
+        $('#selectAll').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('#branch option[value!=""]').prop('selected', true);
+            } else {
+                $('#branch option').prop('selected', false);
+            }
+            $('#branch').trigger('change'); // important for select2
+        });
+
+        //  Listen for changes in the dropdown
+        $('#branch').on('change', function () {
+            let total = $('#branch option[value!=""]').length;   // all real options
+            let selected = $('#branch option:selected').length; // how many selected
+
+            // If all options are selected, check Select All
+            // Else uncheck it
+            if (selected === total && total > 0) {
+                $('#selectAll').prop('checked', true);
+            } else {
+                $('#selectAll').prop('checked', false);
+            }
+
+            setTimeout(function () {
+                $('.select2-selection__choice')
+                    .addClass('bg-info text-white border-0'); // Bootstrap style
+            }, 0);
+        });
+
+
+
+        //=====================Segment Select All==========================
+        $('#segment').select2({
+            width: '100%'
+        });
+        //  Select/Deselect all banks when checkbox changes
+        $('#segmentSelectAll').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('#segment option[value!=""]').prop('selected', true);
+            } else {
+                $('#segment option').prop('selected', false);
+            }
+            $('#segment').trigger('change'); // important for select2
+        });
+
+        //  Listen for changes in the dropdown
+        $('#segment').on('change', function () {
+            let total = $('#segment option[value!=""]').length;   // all real options
+            let selected = $('#segment option:selected').length; // how many selected
+
+            // If all options are selected, check Select All
+            // Else uncheck it
+            if (selected === total && total > 0) {
+                $('#segmentSelectAll').prop('checked', true);
+            } else {
+                $('#segmentSelectAll').prop('checked', false);
+            }
+
+            setTimeout(function () {
+                $('.select2-selection__choice')
+                    .addClass('bg-info text-white border-0'); // Bootstrap style
+            }, 0);
+
+            // Fetch segment-wise brands via AJAX
+            let selectedSegments = $(this).val() || [];
+            let segmentsStr = selectedSegments.join(',');
+            $.ajax({
+                url: "[[=URL('report', 'get_brands_by_segment')]]",
+                type: 'GET',
+                data: { segments: segmentsStr },
+                dataType: 'json',
+                success: function (response) {
+                    let brandSelect = $('#brand');
+                    let currentSelected = brandSelect.val() || [];
+                    
+                    brandSelect.empty();
+                    brandSelect.append('<option value="">Select Brand </option>');
+                    
+                    if (response.brands && response.brands.length > 0) {
+                        response.brands.forEach(function (brand) {
+                            let isSelected = currentSelected.includes(brand.id.toString()) ? 'selected' : '';
+                            brandSelect.append('<option value="' + brand.id + '" ' + isSelected + '>' + brand.name + '</option>');
+                        });
+                    }
+                    
+                    brandSelect.trigger('change');
+                },
+                error: function (xhr, status, error) {
+                    console.error("Failed to fetch brands:", error);
+                }
+            });
+        });
+
+
+
+        //=====================Brand Select All==========================
+        $('#brand').select2({
+            width: '100%'
+        });
+        //  Select/Deselect all banks when checkbox changes
+        $('#brandSelectAll').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('#brand option[value!=""]').prop('selected', true);
+            } else {
+                $('#brand option').prop('selected', false);
+            }
+            $('#brand').trigger('change'); // important for select2
+        });
+
+        //  Listen for changes in the dropdown
+        $('#brand').on('change', function () {
+            let total = $('#brand option[value!=""]').length;   // all real options
+            let selected = $('#brand option:selected').length; // how many selected
+
+            // If all options are selected, check Select All
+            // Else uncheck it
+            if (selected === total && total > 0) {
+                $('#brandSelectAll').prop('checked', true);
+            } else {
+                $('#brandSelectAll').prop('checked', false);
+            }
+
+            setTimeout(function () {
+                $('.select2-selection__choice')
+                    .addClass('bg-info text-white border-0'); // Bootstrap style
+            }, 0);
+        });
+
+
+        //==============Year Dropdown=================`
+        const startYear = 2020;
+        const currentYear = new Date().getFullYear();
+        const yearSelect = document.getElementById("yearCombo");
+
+        for (let year = currentYear; year >= startYear; year--) {
+            let option = document.createElement("option");
+            option.value = year;
+            option.textContent = year;
+            if (year === currentYear) {
+                option.selected = true; // set current year as default
+            }
+            yearSelect.appendChild(option);
+        }
+
+
+        //==============Month Dropdown=================
+        const months = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+
+        const currentMonth = new Date().getMonth(); // 0 = Jan, 11 = Dec
+        const monthSelect = document.getElementById("monthCombo");
+
+        months.forEach((month, index) => {
+            let option = document.createElement("option");
+            option.value = index + 1;  // 1–12
+            option.textContent = month;
+            if (index === currentMonth) {
+                option.selected = true; // current month selected
+            }
+            monthSelect.appendChild(option);
+        });
+
+    });
+</script>
+[[end]]

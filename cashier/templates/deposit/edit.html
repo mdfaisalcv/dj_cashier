@@ -1,0 +1,386 @@
+[[extend 'layout.html']]
+
+[[block header]]
+[[icon='fa fa-chart-line']]
+[[breadcamp = 'Deposits']]
+[[end]]
+
+[[block content]]
+<style>
+/* Chrome, Safari, Edge, Opera */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.no-spinner {
+  -moz-appearance: textfield;
+}
+
+/* IE 10+ */
+.no-spinner::-ms-clear,
+.no-spinner::-ms-expand {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.table > :not(caption) > * > *{
+    padding: 0.1rem;
+}
+</style>
+
+<div class="container-section">
+    <div class="d-flex justify-content-between align-items-center border-bottom">
+        <span class="icon-text icon-text-bold">
+            <i class="fa-solid fa-plus"></i>
+            <span>Edit</span>
+        </span>
+
+        <div class="d-flex justify-content-end">
+            <div class="p-1">
+                <button type="button" class="btn btn-sm btn-light d-none" id="btn_view">
+                    <i class="fa-regular fa-eye"></i> <span class="ms-2">View</span>
+                </button>
+                [[if check_active_date=="True":]]
+                <button type="button" class="btn btn-sm btn-light" id="btn_edit">
+                    <i class="fa-regular fa-pen-to-square"></i> <span class="ms-2">Edit</span>
+                </button>
+                [[pass]]
+            </div>
+            <div class="p-1">
+                <a href="[[=URL('deposit/index')]]" class="btn btn-sm btn-light">
+                    <i class="fa-solid fa-arrow-left"></i> <span class="ms-2">Back</span>
+                </a>
+            </div>
+            [[if check_active_date=="True":]]
+            <div class="p-1">
+                <div class="btn-group">
+                    <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        Action
+                    </button>
+                    <!-- <ul class="dropdown-menu"> -->
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="delete?id=[[=request.query.get('id')]]" id="delete_btn">
+                            <i class="fa-solid fa-trash-can"></i><span class="ms-2">Delete</span></a>
+                    </div>
+                    <!-- </ul> -->
+                </div>
+            </div>
+            [[pass]]
+        </div>
+    </div>
+    <div class="container py-2">
+
+        <form action="[[=URL('deposit','update')]]?id=[[=record.id]]" method="POST">
+
+            <div id="custom_form">        
+                <div class="row">                
+                    <div class="col-md-4">
+                        <div class="mb-3 custom_input">
+                            <label for="transaction_date" class="form-label">Transaction Date</label>
+                            <div class="flatpickr-wrapper">
+                                <input type="text" class="form-control form-control-sm date-picker" id="transaction_date" name="transaction_date" placeholder="Select Transaction Date" value="[[=record.trans_date]]">
+                                <i class="fa fa-calendar calendar-icon text-secondary calendar-toggle"></i>                            
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="mb-3 custom_input">
+                            <label for="branch_name" class="form-label">Branch Name</label>
+                            <select class="select_custom form-control form-select-sm selectChange" name="branch_name"
+                                id="branch_name">
+                                <option value="">Select Branch</option>
+                                [[for row in branchList:]]
+                                <option value="[[=row.id]]" [[if str(record['branch_id']) == str(row.id):]] selected [[pass]]>[[=row.name]]</option>
+                                [[pass]]
+                            </select>
+                        </div>                    
+                    </div>
+                    <div class="col-md-4"></div>
+                
+                </div>
+
+                <div class="row">
+                    <div class="table-responsive radius">
+                        <table class="table table-bordered radius mb-0" id="table_id" style="width: 80%">
+                            
+                        </table>
+                    </div>
+                </div>
+                <br>
+                <div class="row d-none" id="edit_view_section">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-start">
+                            <div class="me-2">
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="fa-regular fa-floppy-disk"></i> <span class="ms-2">Post</span>
+                                </button>
+                            </div>
+                            <div class="">
+                                <button type="reset" class="btn btn-sm btn-light">
+                                    <i class="fa-solid fa-retweet"></i> <span class="ms-2">Reset</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+[[end]]
+[[block scripts]]
+<!-- individual pages can add scripts here -->
+ <script>
+    $(document).ready(function() {    
+        var active_date = "[[=active_date]]";  
+        var expire_at = "[[=expire_at]]";
+        var current_date = "[[=str(date_time_list['current_date'])]]";
+
+        var active_date_arr = [];
+        if (expire_at == current_date) {
+            active_date_arr = active_date.split(',').map(function(dateStr) {
+                var date = new Date(dateStr.trim());
+                var yyyy = date.getFullYear();
+                var mm = String(date.getMonth() + 1).padStart(2, '0');
+                var dd = String(date.getDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;   // always Y-m-d
+            });
+        } else {
+            console.log('not today');
+        }
+
+        // Collect backDate → today
+        const dates = new Set();
+        const today = new Date();
+        const backDate = new Date(today);
+        backDate.setDate(today.getDate() - 3);
+
+        // Helper: format date as Y-m-d
+        function formatYMD(d) {
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        // Add backDate → today (Y-m-d format)
+        for (let d = new Date(backDate); d <= today; d.setDate(d.getDate() + 1)) {
+            dates.add(formatYMD(new Date(d)));
+        }
+
+        // Merge & unique
+        const mergedDates = [...active_date_arr, ...Array.from(dates)];
+        const activeDates = [...new Set(mergedDates)];
+
+        // Role-based initialization: make the field editable only for super_admin
+        let transactionPicker;
+        "[[if session.get('role') == 'super_admin':]]"
+        transactionPicker = flatpickr("#transaction_date", {
+            dateFormat: "Y-m-d",   // actual value
+            altInput: true,
+            altFormat: "d-M-Y",    // show to user
+            //enable: activeDates,   // must be Y-m-d
+            allowInput: true, // allow typing for super_admin
+            clickOpens: true
+            ,
+            // allow choosing any past date up to today
+            maxDate: new Date()
+        });
+        try {
+            // If there's no value set in the input, default to today's date for super_admin
+            if (transactionPicker && !transactionPicker.input.value) {
+                transactionPicker.setDate(new Date(), false);
+            }
+        } catch (e) { console.warn('failed to default to today:', e); }
+        try {
+            if (transactionPicker) {
+                if (transactionPicker.input) transactionPicker.input.readOnly = false;
+                if (transactionPicker.altInput) {
+                    transactionPicker.altInput.removeAttribute('readonly');
+                    transactionPicker.altInput.tabIndex = 0; // keep keyboard focusable
+                }
+            }
+        } catch (e) { console.warn('failed to set altInput editable:', e); }
+        "[[else:]]"
+        $('#transaction_date').attr('readonly', true);
+        transactionPicker = flatpickr("#transaction_date", {
+            dateFormat: "Y-m-d",   // actual value
+            altInput: true,
+            altFormat: "d-M-Y",    // show to user
+            //enable: activeDates,   // must be Y-m-d
+            allowInput: false, // disable typing for non-super-admin
+            clickOpens: false
+            //,
+            // restrict to past dates only
+            //maxDate: new Date()
+        });
+        try {
+            if (transactionPicker) {
+                if (transactionPicker.input) transactionPicker.input.readOnly = true;
+                if (transactionPicker.altInput) {
+                    transactionPicker.altInput.setAttribute('readonly', 'true');
+                    transactionPicker.altInput.tabIndex = -1; // prevent tab focus
+                }
+            }
+        } catch (e) { console.warn('failed to set altInput readonly:', e); }
+        "[[pass]]"
+        // Open the flatpickr when the calendar icon is clicked
+        $('.calendar-toggle').on('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            try{
+                if (transactionPicker) transactionPicker.open();
+            } catch(err) { console.warn('Calendar pick not initialized', err); }
+        });
+
+        //==================
+        function loadBranchData(branchId) {
+            if (!branchId) {
+                $('#table_id').empty();
+                return;
+            }
+
+            $.ajax({
+                url: '[[=URL("default","get_branch_data")]]',
+                method: 'GET',
+                data: { branch_id: branchId,trans_id:"[[=record.id]]" },
+                success: function(response) {
+                    if (response.status === 'Success') {
+                        let banks = response.banks;
+                        let segments = response.segments;
+                        let amounts = response.amounts || {};
+
+                        // --- Table Header ---
+                        let thead = `<thead style="background-color: #ccc9fa"><tr>
+                            <th>Brand</th>`;
+                        banks.forEach(bank => {
+                            thead += `<th class="text-end">${bank.short_name}</th>`;
+                        });
+                        thead += `</tr></thead>`;
+
+                        // --- Global Total row under header ---
+                        let totalRow = `<tr class="bg-info total-row fw-bold text-white"><td>Total</td>`;
+                        banks.forEach(bank => {
+                            totalRow += `<td class="text-end bank-total fw-bold" data-bank="${bank.id}">0.00</td>`;
+                        });
+                        totalRow += `</tr>`;
+
+                        // --- Table Body ---
+                        let tbody = `<tbody id="tbody">`;
+
+                        segments.forEach(segment => {
+                            // Segment row (FMCE) - segment totals will go here
+                            tbody += `<tr class="bg-light segment-row fw-bold" data-segment="${segment.segment_name}">
+                                <td>${segment.segment_name}</td>`;
+                            banks.forEach(bank => {
+                                tbody += `<td class="text-end segment-bank-total fw-bold" data-bank="${bank.id}">0.00</td>`;
+                            });
+                            tbody += `</tr>`;
+
+                            // Brand rows
+                            segment.brands.forEach(brand => {
+                                tbody += `<tr class="brand-row" data-segment="${segment.segment_name}">
+                                    <td>${brand.name}
+                                        <input type="hidden" name="brand_name" value="${brand.id}">
+                                    </td>`;
+                                banks.forEach(bank => {
+                                    let key = `${bank.id}_${brand.id}`;
+                                    let value = amounts[key] != null ? amounts[key] : 0;
+                                    tbody += `<td style="width: 120px;">
+                                        <div class="custom_input"><input type="text" inputmode="decimal" class="form-control form-control-sm no-spinner formatted-number text-end" name="bank_${bank.id}_${brand.id}" autocomplete="off" value="${value}"></div>
+                                    </td>`;
+                                });
+                                tbody += `</tr>`;
+                            });
+                        });
+
+                        tbody += `</tbody>`;
+                        $('#table_id').html(thead + totalRow + tbody);
+
+                        // Format pre-filled values with comma separators
+                        $('#table_id').find('.formatted-number').each(function() {
+                            formatWithCommas(this);
+                        });
+
+                        // Calculate totals
+                        calculateTotals();
+
+                        // Recalculate on input change
+                        $('#table_id').on('input', '.amount-input', function() {
+                            calculateTotals();
+                        });
+                    }
+                }
+            });
+        }
+
+
+        /**
+         * Calculate both global totals and segment totals
+         */
+        function calculateTotals() {
+            // 1️⃣ Global totals
+            $('.total-row .bank-total').each(function() {
+                let bankId = $(this).data('bank');
+                let total = 0;
+                $('.brand-row').each(function() {
+                    let rawVal = $(this).find(`input[name^="bank_${bankId}_"]`).val() || '';
+                    let val = parseFloat(rawVal.replace(/,/g, '')) || 0;
+                    total += val;
+                });
+                $(this).text(total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+            });
+
+            // 2️⃣ Segment totals
+            $('.segment-row').each(function() {
+                let segment = $(this).data('segment');
+                $(this).find('.segment-bank-total').each(function() {
+                    let bankId = $(this).data('bank');
+                    let segTotal = 0;
+                    $(`.brand-row[data-segment="${segment}"]`).each(function() {
+                        let rawVal = $(this).find(`input[name^="bank_${bankId}_"]`).val() || '';
+                        let val = parseFloat(rawVal.replace(/,/g, '')) || 0;
+                        segTotal += val;
+                    });
+                    $(this).text(segTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+                });
+            });
+        }
+
+        // Trigger on dropdown change
+        $('#branch_name').on('change', function() {
+            let branchId = $(this).val();
+            loadBranchData(branchId);
+        });
+
+        // Auto-load if branch selected
+        $(document).ready(function() {
+            let initialBranchId = $('#branch_name').val();
+            if (initialBranchId) {
+                loadBranchData(initialBranchId);
+            }
+        });
+
+
+
+
+
+
+
+    
+    });
+
+
+    
+
+
+
+</script>
+[[end]]

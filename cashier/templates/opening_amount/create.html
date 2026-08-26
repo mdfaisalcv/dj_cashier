@@ -1,0 +1,195 @@
+{% extends 'layout.html' %}
+
+{% block header %}
+    {% with icon='fa fa-chart-line' breadcamp='Opening Amount' %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{% block content %}
+
+<style>
+/* Chrome, Safari, Edge, Opera */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+.no-spinner {
+  -moz-appearance: textfield;
+}
+
+/* IE 10+ */
+.no-spinner::-ms-clear,
+.no-spinner::-ms-expand {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.table > :not(caption) > * > *{
+    padding: 0.1rem;
+}
+</style>
+
+<div class="container-section">
+    <div class="d-flex justify-content-between align-items-center border-bottom">
+        <span class="icon-text icon-text-bold">
+            <i class="fa-solid fa-plus"></i>
+            <span>Create</span>
+        </span>
+
+        <div class="d-flex justify-content-end">
+            <div class="p-1">
+                <a href="{% url 'cashier:opening_amount-index' %}" class="btn btn-sm btn-light">
+                    <i class="fa-solid fa-arrow-left"></i> <span class="ms-2">Back</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="container py-2">
+
+        <form action="{% url 'cashier:opening_amount-submit' %}" method="POST">
+            {% csrf_token %}
+        <div id="custom_form">        
+            <div class="row">                
+                <div class="col-md-4">
+                    <div class="mb-3">
+
+                        <label for="transaction_date" class="form-label">Transaction Date</label>
+                        <div class="flatpickr-wrapper">
+                        <input type="text"
+                                id="transaction_date"
+                                class="form-control form-control-sm date-picker"
+                                name="transaction_date"
+                                placeholder="Select Transaction Date"
+                                >
+                        <i class="fa fa-calendar calendar-icon text-secondary calendar-toggle"></i>
+                        </div>
+                    </div>
+                    </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="branch_name" class="form-label">Branch Name</label>
+                        <select class="select_custom form-control form-select-sm selectChange" name="branch_name"
+                            id="branch_name">
+                            <option value="">Select Branch</option>
+                            {% for row in branchList %}
+                                <option value="{{ row.id }}" {% if branchList|length == 1 %} selected {% endif %}>{{ row.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>                    
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="opening_balance" class="form-label">Opening Balance</label>
+                        <input type="number" step="0.01" class="form-control form-control-sm no-spinner opening_balance" name="opening_balance" style="text-align:right"> 
+                    </div>
+                </div>
+              
+            </div>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="table-responsive radius">
+                        <table class="table table-bordered radius mb-0" id="table_id" >
+                            <thead style="background-color: #ccc9fa">
+                                <tr>
+                                    <th class="text-left">
+                                        Brand
+                                    </th>
+                                    <th class="text-center">
+                                        Collection
+                                    </th>
+                                    <th class="text-center">
+                                        Outstanding
+                                    </th>
+                                    
+                                </tr>
+                            </thead>
+                            <tbody id="tbody">
+                                {% for segment in segments %}
+                                <tr class="rowClass bg-warning">
+                                    <td class="row-index text-left" colspan="9">
+                                        {{ segment.segment_name }}
+                                    </td>
+                                </tr>
+
+                                {% for brand in segment.brands %}
+                                    <tr class="rowClass">
+                                        <td class="row-index text-left">
+                                            <div class="col-md-12" style="width:100px">
+                                                <div class="">
+                                                    {{ brand.name }}
+                                                    <input type="hidden" class="form-control form-control-sm no-spinner brand_name" name="brand_name" value="{{ brand.id }}" style="text-align:right">
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="row-index text-left">
+                                            <div class="col-md-12" style="width:150px; float:right">
+                                                <div class="">
+                                                    <input type="number" step="0.01" class="form-control form-control-sm no-spinner collection" name="collection_{{ brand.id }}" style="text-align:right">
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="row-index text-left">
+                                            <div class="col-md-12" style="width:150px; float:right">
+                                                <div class="">
+                                                    <input type="number" step="0.01" class="form-control form-control-sm no-spinner outstanding" name="outstanding_{{ brand.id }}" style="text-align:right">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% endfor %}
+                            </tbody>
+                        </table>            
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="mb-3">
+                        <label for="cash_amount_pc" class="form-label">Cash Amount (P/C)</label>
+                        <input type="number" step="0.01" class="form-control form-control-sm no-spinner" name="cash_amount_pc">
+                    </div> 
+                </div>
+                <div class="col-md-2">
+                    <div class="mb-3">
+                        <label for="bank_amount_pc" class="form-label">Bank Amount (P/C)</label>
+                        <input type="number" step="0.01" class="form-control form-control-sm no-spinner" name="bank_amount_pc">
+                    </div> 
+                </div>
+            </div>
+
+            <br>
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-start">
+                        <div class="me-2">
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i class="fa-regular fa-floppy-disk"></i> <span class="ms-2">Save</span>
+                            </button>
+                        </div>
+                        <div class="">
+                            <button type="reset" class="btn btn-sm btn-light">
+                                <i class="fa-solid fa-retweet"></i> <span class="ms-2">Reset</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- individual pages can add scripts here -->
+<script>    
+
+</script>
+
+{% endblock %}

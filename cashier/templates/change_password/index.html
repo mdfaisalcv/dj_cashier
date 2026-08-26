@@ -1,0 +1,100 @@
+[[extend 'layout.html']]
+
+[[block header]]
+[[icon='fa fa-chart-line']]
+[[breadcamp = 'Change Password']]
+
+[[end]]
+
+[[block content]]
+<div class="container-section">
+    <div class="d-flex justify-content-between align-items-center border-bottom">
+        <span class="icon-text icon-text-bold">
+            <i class="fa-solid fa-plus"></i>
+            <span>Create</span>
+        </span>
+
+        <div class="d-flex justify-content-end">
+            <div class="p-1">
+                <a href="[[=URL('dashboard/index')]]" class="btn btn-sm btn-light">
+                    <i class="fa-solid fa-arrow-left"></i> <span class="ms-2">Back</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="container py-2">
+
+        <form action="[[=URL('change_password','submit')]]" method="POST">
+
+            <div id="custom_form">
+                <div class="row">
+
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label for="old_password" class="form-label">Old Password </label>
+                            <input type="password" name="old_password" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label for="new_password" class="form-label">New Password</label>
+                            <input type="password" name="new_password" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label">Confirm Password</label>
+                            <input type="password" name="confirm_password" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-start">
+                            <div class="me-2">
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="fa-regular fa-floppy-disk"></i> <span class="ms-2">Save</span>
+                                </button>
+                            </div>
+                            <div class="">
+                                <button type="reset" class="btn btn-sm btn-light">
+                                    <i class="fa-solid fa-retweet"></i> <span class="ms-2">Reset</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+[[end]]
+[[block scripts]]
+<!-- individual pages can add scripts here -->
+<script>
+
+    $(document).ready(function () {
+        $(".date-picker-multi").each(function () {
+            var $input = $(this);
+
+            var fp = $input.flatpickr({
+                disableMobile: true,
+                allowInput: true,
+                mode: "multiple",          // ✅ multiple date selection
+                monthSelectorType: "dropdown",
+                dateFormat: "Y-m-d",       // value stored/submitted
+                altInput: true,
+                altFormat: "d-M-Y",        // user-friendly display
+                // defaultDate: ["2025-09-01", "2025-09-10"], // optional: preselect multiple
+            });
+
+            // Toggle calendar open when clicking icon
+            $input.closest(".flatpickr-wrapper").find(".calendar-toggle").on("click", function () {
+                fp.open();
+            });
+        });
+    });
+
+</script>
+[[end]]

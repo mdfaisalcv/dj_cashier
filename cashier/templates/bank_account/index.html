@@ -1,0 +1,309 @@
+{% extends 'layout.html' %}
+
+{% block header %}
+    {% with icon='fa fa-chart-line' breadcamp='Bank Accounts' %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container-section" >
+    <div class="row">
+
+        <div class="col-md-1 mt-2 mb-2">            
+            <span class="icon-text icon-text-bold">
+                <i class="fa-solid fa-table-list"></i>
+                <span>Table</span>
+            </span>
+        </div>
+
+        <div class="col-md-9 mt-2">
+            <div class="row" id="custom_form" style="display: none;">
+                <!-- Filter  Section  start -->
+
+                <div class="col-md-8 mb-2">
+                    <div class="row">
+
+                        <div class="col-md-3">
+                            <div class="">
+                                <select class="form-select form-select-sm select_custom" name="branch_name" style="width: 200px;" placeholder="Select Branch">
+                                    <option value="">Select Branch</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="">
+                                <select class="form-select form-select-sm select_custom" name="bank_name" style="width: 200px;" placeholder="Select Banks">
+                                    <option value="">Select Banks</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="">
+                                <select class="form-select form-select-sm select_custom" name="account_number" style="width: 200px;" placeholder="Select Account Number">
+                                    <option value="">Select Account Number</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div  class="">
+                                <select class="form-select form-select-sm select_custom" name="status" style="width: 200px;" placeholder="Select Status">
+                                    <option value="">Select Status</option>
+                                    <option value="1">Active</option>
+                                    <option value="0">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Filter Section  if you need more then add after below section-->
+
+
+
+
+
+                <!-- Keep this fixed for first row last 4 column -->
+                <div class="col-md-4 mb-2 d-flex justify-content-end">
+                    <div class="me-2">
+                        <button type="submit" id="submit" class="btn btn-sm btn-primary" style="width:90px;">
+                            <i class="fa-solid fa-magnifying-glass"></i> <span class="ms-2">Search</span>
+                        </button>
+                    </div>
+                    <div class="">
+                        <button type="reset" id="reset" class="btn btn-sm btn-light" style="width:90px;">
+                            <i class="fa-solid fa-retweet"></i> <span class="ms-2">Reset</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Keep this fixed for first row last 4 column -->
+
+
+
+
+                <!-- If you need more than 4 filter than add this section -->                
+            
+
+
+
+                <!-- If you need more than 4 filter than add this section -->
+
+
+            </div>       
+        </div>
+
+        <div class="col-md-2 mt-2 mb-2">
+            <div class="d-flex justify-content-end" >                
+                <div class="me-2">
+                    <button type="submit" id="filter" class="btn btn-sm btn-light" style="width:90px;">
+                        <i class="fa-solid fa-filter"></i> <span class="ms-2">Filter</span>
+                    </button>
+                </div>
+
+                <div class="dropdown">
+                    <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false" style="width:90px;">
+                        Action
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="{% url 'cashier:bank_account-create' %}"><i class="fas fa-add me-1"></i>
+                            Add</a>
+                        <button class="dropdown-item" id="ExportExcel"><i class="fas fa-cog me-1"></i> Excel</button>
+
+                    </div> 
+                </div>
+            </div>
+        
+        </div>
+
+    </div>
+
+    
+    <div class="table-responsive">
+      
+
+        <table id="myTable" class="table table-bordered compact table-striped" style="width:100%">
+            <thead>
+            </thead>
+            <tbody></tbody>
+        </table>
+        
+
+    </div>
+    
+</div>
+{% endblock %}
+{% block scripts %}
+<!-- individual pages can add scripts here -->
+<script src="https://cdn.datatables.net/rowgroup/1.5.1/js/dataTables.rowGroup.js"></script>
+<script src="https://cdn.datatables.net/rowgroup/1.5.1/js/rowGroup.dataTables.js"></script>
+<script>
+    $(document).ready(function() {   
+                    
+        $.ajax({
+            url: '{% url "cashier:get_branch_name" %}', // Replace with your endpoint
+            method: 'GET',
+            data: { q:''},
+            dataType: 'json',
+            success: function(data) {   
+
+                $("[name='branch_name']").empty().append('<option value="">Select Branch</option>');;
+                $("[name='branch_name']").select2({
+                    data: data['results'],
+                    placeholder: "Select Branch",
+                    allowClear: true
+                });
+            }
+        });    
+    
+        $.ajax({
+            url: '{% url "cashier:get_bank" %}', // Replace with your endpoint
+            method: 'GET',
+            data: { q:''},
+            dataType: 'json',
+            success: function(data) {    
+
+                $("[name='bank_name']").empty().append('<option value="">Select Banks</option>');;
+                $("[name='bank_name']").select2({
+                    data: data['results'],
+                    placeholder: "Select Banks",
+                    allowClear: true
+                });
+            }
+        });    
+            
+        $.ajax({
+            url: '{% url "cashier:get_bank_account" %}', // Replace with your endpoint
+            method: 'GET',
+            data: { q:''},
+            dataType: 'json',
+            success: function(data) {   
+
+                $("[name='account_number']").empty().append('<option value="">Select Account Number</option>');;
+                $("[name='account_number']").select2({
+                    data: data['results'],
+                    placeholder: "Select Account Number",
+                    allowClear: true
+                });
+            }
+        });  
+    });
+    $("#filter").click(function(e){
+        // $("#custom_form").toggleClass("d-none");
+        $("#custom_form").fadeToggle("slow");
+    });
+
+// Datatable ############################################################
+
+var table = $('#myTable').DataTable({
+        dom: "Bfrt<'d-flex justify-content-between'<l><i><p>>",
+        buttons: [
+            {
+                extend: 'excel',
+                title: 'Bank Accounts Data',
+                filename: 'Bank_Accounts_Data',
+                exportOptions: {
+                    columns: [ 0,1,2,3]
+                },
+            }
+        ],
+        order: [0, 'asc'],
+        searching:false,
+        
+        processing: true,
+        paging: true,
+        serverSide: true,
+        scrollCollapse: false,
+        scrollX: true,
+        scrollY: "413px",
+        fixedHeader: true,
+        fixedColumns: {
+            left: 1, // No left columns fixed
+            right: 1 // Fix the last column
+        },    
+        lengthMenu: [
+        [16, 50, 100, -1],
+        [16, 50, 100, 'All']
+        ],
+        ajax: {
+            async: true,
+            type: 'GET',
+            url: '{% url "cashier:bank_account-get_data" %}',
+            data: function (d) {
+                d.branch_name = $("select[name='branch_name']").val();
+                d.bank_name = $("select[name='bank_name']").val();
+                d.account_number = $("select[name='account_number']").val();
+                d.status = $("select[name='status']").val();
+            },
+            dataSrc: 'data'
+        },
+        columns: [
+        
+            // {
+            //     title: 'SN',
+            //     data: 'id'
+            // },            
+            {
+                title: 'TDCL Branch',
+                data: 'branch_name'
+            },            
+            {
+                title: 'Bank',
+                data: 'bank_name'
+            },            
+            {
+                title: 'Account Number',
+                data: 'account_number'
+            },            
+            {
+                title: 'Status',
+                data: 'status',
+                orderable:false,
+                render: function (data, type, row) {
+                    return `<div class='badge ${data == 1 ? 'bg-success' : 'bg-secondary'} fw-bold'>${data == 1 ? 'ACTIVE' : 'INACTIVE'}</div>`
+
+                }
+            },
+            {
+                title: '',
+                data: 'id',
+                render: function (data, type, row) {
+                    return `<a class="text-secondary" href="{% url 'cashier:bank_account-edit' %}?id=${data}"><i class="fas fa-edit"></i></a>`;
+
+                }
+            },
+        ],
+        });
+
+
+
+    $("#submit").click(function(e){
+      e.preventDefault();
+      table
+    .clear()
+    .draw();
+    });
+
+    $("#reset").click(function(e){
+        e.preventDefault();
+        $("input,select").val(null);
+        $('.select_custom').each(function() {
+            var placeholder = $(this).attr('placeholder');
+            $(this).select2({
+                // dropdownParent: $("#custom_form"),
+                placeholder: placeholder,
+                allowClear: true,
+            });
+        });
+        table.clear().draw();
+    });
+    // Datatable ############################################################
+
+
+    
+</script>
+{% endblock %}

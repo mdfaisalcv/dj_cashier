@@ -1,0 +1,368 @@
+[[extend 'layout.html']]
+
+[[block header]]
+[[icon='fa fa-chart-line']]
+[[breadcamp = 'Date Wise Sales']]
+[[end]]
+
+
+[[block content]]
+
+<div class="container-section" >
+    <div class="row">
+
+        <div class="col-md-1 mt-2 mb-2">            
+            <span class="icon-text icon-text-bold">
+                <i class="fa-solid fa-table-list"></i>
+                <span>Table</span>
+            </span>
+        </div>
+
+        <div class="col-md-9 mt-2">
+            <div class="row" id="custom_form" style="display: none;">
+                <!-- Filter  Section  start -->
+
+                <div class="col-md-8 mb-2">
+                    <div class="row">
+
+                        <div class="col-md-3">
+                            <div class="">
+                                <select class="form-select form-select-sm select_custom" name="branch_name" style="width: 200px;" placeholder="Select Branch">
+                                    <option value="">Select Branch</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="">
+                                <div class="flatpickr-wrapper">
+                                    <input type="text"
+                                            id="from_date"
+                                            class="form-control form-control-sm date-picker"
+                                            name="from_date"
+                                            placeholder="Select From Date"
+                                            >
+                                    <i class="fa fa-calendar calendar-icon text-secondary calendar-toggle"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="">
+                                <div class="flatpickr-wrapper">
+                                    <input type="text"
+                                            id="to_date"
+                                            class="form-control form-control-sm date-picker"
+                                            name="to_date"
+                                            placeholder="Select To Date"
+                                            >
+                                    <i class="fa fa-calendar calendar-icon text-secondary calendar-toggle"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div  class="">
+                                <select class="form-select form-select-sm select_custom" name="status" style="width: 200px;" placeholder="Select Status">
+                                    <option value="">Select Status</option>
+                                    <option value="1">Active</option>
+                                    <option value="0">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Filter Section  if you need more then add after below section-->
+
+
+
+
+
+                <!-- Keep this fixed for first row last 4 column -->
+                <div class="col-md-4 mb-2 d-flex justify-content-end">
+                    <div class="me-2">
+                        <button type="submit" id="submit" class="btn btn-sm btn-primary" style="width:90px;">
+                            <i class="fa-solid fa-magnifying-glass"></i> <span class="ms-2">Search</span>
+                        </button>
+                    </div>
+                    <div class="">
+                        <button type="reset" id="reset" class="btn btn-sm btn-light" style="width:90px;">
+                            <i class="fa-solid fa-retweet"></i> <span class="ms-2">Reset</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Keep this fixed for first row last 4 column -->
+
+
+
+
+                <!-- If you need more than 4 filter than add this section -->                
+            
+
+
+
+                <!-- If you need more than 4 filter than add this section -->
+
+
+            </div>       
+        </div>
+
+        <div class="col-md-2 mt-2 mb-2">
+            <div class="d-flex justify-content-end" >                
+                <div class="me-2">
+                    <button type="submit" id="filter" class="btn btn-sm btn-light" style="width:90px;">
+                        <i class="fa-solid fa-filter"></i> <span class="ms-2">Filter</span>
+                    </button>
+                </div>
+
+                <div class="dropdown">
+                    <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false" style="width:90px;">
+                        Action
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="[[=URL('outstanding_reconciliation/create')]]"><i class="fas fa-add me-1"></i>
+                            Add</a>
+                        <button class="dropdown-item" id="ExportExcel"><i class="fas fa-cog me-1"></i> Excel</button>
+                        <a class="dropdown-item" href="[[=URL('sync_bq/import_sales')]]"><i class="fa-solid fa-file-arrow-up me-1"></i>
+                            Import</a>
+                    </div> 
+                </div>
+            </div>
+        
+        </div>
+
+    </div>
+
+    
+    <div class="table-responsive">
+      
+
+        <table id="myTable" class="table table-bordered compact table-striped" style="width:100%">
+            <thead>
+            </thead>
+            <tbody></tbody>
+        </table>
+        
+
+    </div>
+    
+</div>
+[[end]]
+[[block scripts]]
+<!-- individual pages can add scripts here -->
+<script src="https://cdn.datatables.net/rowgroup/1.5.1/js/dataTables.rowGroup.js"></script>
+<script src="https://cdn.datatables.net/rowgroup/1.5.1/js/rowGroup.dataTables.js"></script>
+<script>
+    $(document).ready(function() {        
+        
+        $.ajax({
+            url: '[[=URL("default","get_branch_name")]]', // Replace with your endpoint
+            method: 'GET',
+            data: { q:''},
+            dataType: 'json',
+            success: function(data) {    
+
+                $("[name='branch_name']").empty().append('<option value="">Select Branch</option>');;
+                $("[name='branch_name']").select2({
+                    data: data['results'],
+                    placeholder: "Select Branch",
+                    allowClear: true
+                });
+            }
+        });  
+    });
+    $("#filter").click(function(e){
+        // $("#custom_form").toggleClass("d-none");
+        $("#custom_form").fadeToggle("slow");
+    });
+
+// Datatable ############################################################
+
+var table = $('#myTable').DataTable({
+        dom: "Bfrt<'d-flex justify-content-between'<l><i><p>>",
+        buttons: [
+            {
+                extend: 'excel',
+                title: 'Date Wise Sales Data',
+                filename: 'Date_Wise_Sales_Data',
+                exportOptions: {
+                    columns: [ 1,2,3,4,5,6]
+                },
+            }
+        ],
+        order: [0, 'desc'],
+        searching:false,
+        
+        processing: true,
+        paging: true,
+        serverSide: true,
+        scrollCollapse: false,
+        scrollX: true,
+        scrollY: "413px",
+        fixedHeader: true,
+        fixedColumns: {
+            left: 1, // No left columns fixed
+            right: 1 // Fix the last column
+        },    
+        lengthMenu: [
+        [16, 50, 100, -1],
+        [16, 50, 100, 'All']
+        ],
+        ajax: {
+            async: true,
+            type: 'GET',
+            url: '[[=URL("outstanding_reconciliation","get_data")]]',
+            data: function (d) {
+                d.branch_name = $("select[name='branch_name']").val();
+                d.from_date = $("input[name='from_date']").val();
+                d.to_date = $("input[name='to_date']").val();
+                d.status = $("select[name='status']").val();
+            },
+            dataSrc: 'data'
+        },
+        columns: [
+            {
+                title: 'ID',
+                data: 'id',
+                visible: false
+            }, 
+            {
+                title: 'SL',
+                data: 'sl'
+            },            
+            {
+                title: 'Date',
+                data: 'trans_date',
+                render: function (data, type, row) {
+                    if (!data) return '';
+
+                    let dateObj = new Date(data); // parse "2025-08-25"
+                    let day = String(dateObj.getDate()).padStart(2, '0');
+                    let monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                    let month = monthNames[dateObj.getMonth()];
+                    let year = dateObj.getFullYear();
+
+                    return `${day}-${month}-${year}`;
+                }
+            },                  
+            {
+                title: 'Branch',
+                data: 'branch_name',
+                'className': 'text-center'
+            },
+            {
+                title: 'Sales',
+                data: 'total_sales',
+                'className': 'text-end',
+                render: function (data, type, row) {
+                    if (type === 'display' || type === 'filter') {
+                        let num = parseFloat(data) || 0;
+                        return num.toLocaleString('en-US', { 
+                            minimumFractionDigits: 2, 
+                            maximumFractionDigits: 2 
+                        });
+                    }
+                    return data;
+                }
+            },
+            {
+                title: 'Return',
+                data: 'total_return',
+                'className': 'text-end',
+                render: function (data, type, row) {
+                    if (type === 'display' || type === 'filter') {
+                        let num = parseFloat(data) || 0;
+                        return num.toLocaleString('en-US', { 
+                            minimumFractionDigits: 2, 
+                            maximumFractionDigits: 2 
+                        });
+                    }
+                    return data;
+                }
+            },
+            {
+                title: 'Net Sales',
+                data: 'total_net_sales',
+                'className': 'text-end',
+                render: function (data, type, row) {
+                    if (type === 'display' || type === 'filter') {
+                        let num = parseFloat(data) || 0;
+                        return num.toLocaleString('en-US', { 
+                            minimumFractionDigits: 2, 
+                            maximumFractionDigits: 2 
+                        });
+                    }
+                    return data;
+                }
+            },
+            
+            /*{
+                title: 'Status',
+                data: 'approve',
+                orderable:false,
+                render: function (data, type, row) {
+                    return `<div class='badge ${data == 1 ? 'bg-success' : 'bg-secondary'} fw-bold'>${data == 1 ? 'APPROVED' : 'DRAFT'}</div>`
+
+                }
+            },*/
+            {
+                title: '',
+                data: 'id',
+                className: 'text-center',
+                render: function (data, type, row) {
+                    return `<a class="text-secondary" href="[[=URL('outstanding_reconciliation/edit')]]?id=${data}"><i class="fas fa-edit"></i></a>`;
+
+                }
+            },
+        ],
+        // drawCallback: function (settings) {
+        //     mergeColumnRows('#myTable', [0, 9,10]); // Merge rows in columns 0 and 1
+        // }
+        });
+
+        // function mergeColumnRows(tableId, columnIndexes) {
+        //     columnIndexes.forEach(function (columnIndex) {
+        //     let rows = $(`${tableId} tbody tr`);
+            
+        //     for (let i = 0; i < rows.length; i += 2) { // Process every 2 rows
+        //         let firstRow = $(rows[i]);
+        //         let secondRow = $(rows[i + 1]);
+
+        //         let firstCell = firstRow.find('td').eq(columnIndex);
+        //         let secondCell = secondRow.find('td').eq(columnIndex);
+
+        //         if (firstCell.length > 0) {
+        //             firstCell.attr('rowspan', 2); // Set rowspan to 2
+        //             secondCell.hide(); // Hide the second cell
+        //         }
+        //     }
+        //     });
+        // }
+
+
+    $("#submit").click(function(e){
+      e.preventDefault();
+      table
+    .clear()
+    .draw();
+    });
+
+    $("#reset").click(function(e){
+        e.preventDefault();
+        $("input,select").val(null);
+        $('.select_custom').each(function() {
+            var placeholder = $(this).attr('placeholder');
+            $(this).select2({
+                // dropdownParent: $("#custom_form"),
+                placeholder: placeholder,
+                allowClear: true,
+            });
+        });
+        table.clear().draw();
+    });
+    // Datatable ############################################################
+
+
+    
+</script>
+[[end]]

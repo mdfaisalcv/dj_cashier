@@ -1,0 +1,201 @@
+{% load static %}
+{# logic for controller name should be handled in views or context processor #}
+{# status_counts = get_status_counts() #}
+{# status_counts_integration = get_status_counts_waiting_for_integration() #}
+
+<aside id="sidebar" class="sidebar break-point-sm has-bg-image">
+  <a id="btn-collapse" class="sidebar-collapser"><i class="fa-solid fa-angle-left"></i></a>
+  <div class="image-wrapper">
+    <img src="#" alt="sidebar background" />
+  </div>
+  <div class="sidebar-layout">
+    <div class="sidebar-header">
+      <a href="/cashier/dashboard/index" style="color: inherit;">
+        <i class="fa-solid fa-money-bill-1-wave text-info"></i>
+        <span class="fs-4 fw-bold">CASH</span>
+        <span class="fs-6 fw-bold text-info">ier</span>
+      </a>
+    </div>
+    <div class="sidebar-content">
+      <nav class="menu open-current-submenu">
+        <ul>
+          <li class="menu-header"><span> Master Setup </span></li>
+          <li class="menu-item sub-menu">
+            <a href="#">
+              <span class="menu-icon">
+                <i class="fa-solid fa-gear"></i>
+              </span>
+              <span class="menu-title">Settings</span>
+            </a>
+            <div class="sub-menu-list">
+              <ul>
+                <li class="menu-item {% if controller_name == 'branch' %}active_link{% endif %}">
+                  <a href="{% url 'cashier:branch-index' %}">
+                    <span class="menu-icon"><i class="fa-solid fa-building"></i></span>
+                    <span class="menu-title">Branch</span>
+                  </a>
+                </li>
+                <li class="menu-item {% if controller_name == 'bank' %}active_link{% endif %}">
+                  <a href="{% url 'cashier:bank-index' %}">
+                    <span class="menu-icon"><i class="fa-solid fa-building"></i></span>
+                    <span class="menu-title">Bank</span>
+                  </a>
+                </li>
+
+                <li class="menu-item {% if controller_name == 'bank_account' %}active_link{% endif %}">
+                  <a href="{% url 'cashier:bank_account-index' %}">
+                    <span class="menu-icon"><i class="fa-solid fa-receipt"></i></span>
+                    <span class="menu-title">Bank Accounts</span>
+                  </a>
+                </li>
+                <li class="menu-item {% if controller_name == 'segment' %}active_link{% endif %}">
+                  <a href="{% url 'cashier:segment-index' %}">
+                    <span class="menu-icon"><i class="fa-solid fa-layer-group"></i></span>
+                    <span class="menu-title">Segment</span>
+                  </a>
+                </li>
+
+                <li class="menu-item {% if controller_name == 'brand' %}active_link{% endif %}">
+                  <a href="{% url 'cashier:brand-index' %}">
+                    <span class="menu-icon"><i class="fas fa-dolly-flatbed"></i></span>
+                    <span class="menu-title">Brand</span>
+                  </a>
+                </li>
+
+                <li class="menu-item {% if controller_name == 'opening_amount' %}active_link{% endif %}">
+                  <a href="{% url 'cashier:opening_amount-index' %}">
+                    <span class="menu-icon"><i class="fa-solid fa-vault"></i></span>
+                    <span class="menu-title">Opening Amount</span>
+                  </a>
+                </li>
+
+                <li class="menu-item {% if controller_name == 'open_date' %}active_link{% endif %}">
+                  <a href="{% url 'cashier:open_date-index' %}">
+                    <span class="menu-icon"><i class="fa-solid fa-calendar-days"></i></span>
+                    <span class="menu-title">Open Date</span>
+                  </a>
+                </li>
+
+                <li class="menu-item {% if controller_name == 'user' %}active_link{% endif %}">
+                  <a href="{% url 'cashier:user-index' %}">
+                    <span class="menu-icon"><i class="fa-solid fa-user-plus"></i></span>
+                    <span class="menu-title">Users</span>
+                  </a>
+                </li>
+
+              </ul>
+            </div>
+          </li>
+
+          {% comment %}
+          <li class="menu-header">
+            <span> Transaction </span>
+          </li>
+          <li
+            class="menu-item sub-menu {% if request.resolver_match.url_name in 'date_wise_receipt,classified' %}open{% endif %}">
+            <a href="#">
+              <span class="menu-icon">
+                <i class="fa-brands fa-windows"></i>
+              </span>
+              <span class="menu-title">Operations</span>
+            </a>
+            <div class="sub-menu-list">
+              <ul>
+
+                {% if check_role.date_wise_receipt_manage or check_role.date_wise_receipt_view %}
+                <li
+                  class="menu-item {% if request.resolver_match.url_name == 'date_wise_receipt' %}active_link{% endif %}">
+                  <a href="{% url 'cashier:date-wise-receipt-index' %}">
+                    <span class="menu-icon"><i class="fa-solid fa-receipt"></i></span>
+                    <span class="menu-title">Date Wise Receipt</span>
+                  </a>
+                </li>
+                {% endif %}
+
+                {% if check_role.bank_charge_manage or check_role.bank_charge_view %}
+                <li class="menu-item {% if request.resolver_match.url_name == 'bank_charge' %}active_link{% endif %}">
+                  <a href="{% url 'cashier:bank-charge-index' %}">
+                    <span class="menu-icon"><i class="fa-solid fa-building-columns"></i></span>
+                    <span class="menu-title">Bank Charges</span>
+                  </a>
+                </li>
+                {% endif %}
+
+                {% if check_role.petty_cash_manage or check_role.petty_cash_view %}
+                <li class="menu-item {% if request.resolver_match.url_name == 'petty_cash' %}active_link{% endif %}">
+                  <a href="{% url 'cashier:petty-cash-index' %}">
+                    <span class="menu-icon"><i class="fa-solid fa-money-bill-1-wave"></i></span>
+                    <span class="menu-title">Petty Cash</span>
+                  </a>
+                </li>
+                {% endif %}
+
+                {% if check_role.diposit_manage or check_role.diposit_view %}
+                <li class="menu-item {% if request.resolver_match.url_name == 'deposit' %}active_link{% endif %}">
+                  <a href="{% url 'cashier:deposit-index' %}">
+                    <span class="menu-icon"><i class="fa-solid fa-money-bill-transfer"></i></span>
+                    <span class="menu-title">Deposits</span>
+                  </a>
+                </li>
+                {% endif %}
+
+                {% if check_role.date_wise_sales_manage or check_role.date_wise_sales_view %}
+                <li
+                  class="menu-item {% if request.resolver_match.url_name == 'outstanding_reconciliation' %}active_link{% endif %}">
+                  <a href="{% url 'cashier:outstanding-reconciliation-index' %}">
+                    <span class="menu-icon"><i class="fa-solid fa-trowel-bricks"></i></span>
+                    <span class="menu-title">Date Wise Sales</span>
+                  </a>
+                </li>
+                {% endif %}
+
+                {% if check_role.impress_bank_reconcile_manage or check_role.impress_bank_reconcile_view %}
+                <li
+                  class="menu-item {% if request.resolver_match.url_name == 'imprest_bank_reconciliation' %}active_link{% endif %}">
+                  <a href="{% url 'cashier:imprest-bank-reconciliation-index' %}">
+                    <span class="menu-icon"><i class="fa-solid fa-money-bill-trend-up"></i></span>
+                    <span class="menu-title">Imprest Bank Reconciliation</span>
+                  </a>
+                </li>
+                {% endif %}
+
+              </ul>
+            </div>
+          </li>
+
+          <li class="menu-header">
+            <span> Report </span>
+          </li>
+          <li class="menu-item">
+            <div class="sub-menu-list">
+              <ul>
+                <li class="menu-item {% if request.resolver_match.url_name == 'report' %}active_link{% endif %}">
+                  {# <a href="{% url 'cashier:report-index' %}"> #}
+                    <span class="menu-icon"><i class="fa-solid fa-percentage"></i></span>
+                    <span class="menu-title">Report</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </li>
+          {% endcomment %}
+
+        </ul>
+      </nav>
+    </div>
+    <div class="sidebar-footer d-flex justify-content-between">
+      <a href="#">
+        <i class="fa fa-bell"></i>
+      </a>
+      <a href="#">
+        <i class="fa fa-envelope"></i>
+      </a>
+      <a href="#">
+        <i class="fa fa-cog"></i>
+      </a>
+      <a href="/cashier/login/logout">
+        <i class="fa fa-power-off"></i>
+      </a>
+    </div>
+  </div>
+</aside>

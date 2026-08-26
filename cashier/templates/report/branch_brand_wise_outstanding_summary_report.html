@@ -1,0 +1,214 @@
+[[extend 'layout_landscape.html']]
+
+[[block header]]
+[[icon='fa fa-chart-line']]
+[[breadcamp = 'Branch & Brand Wise Outstanding Summary Report']]
+[[end]]
+
+[[block content]]
+<style>
+.brand-name-scroll {
+    display: block;
+    max-width: 100px;   /* এখানে চাইলে width কমান/বাড়ান */
+    overflow-x: auto;
+    white-space: nowrap;
+}
+/* custom thin scrollbar for brand name */
+.brand-name-scroll::-webkit-scrollbar {
+    height: 4px;
+}
+.brand-name-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+.brand-name-scroll::-webkit-scrollbar-thumb {
+    background: #ccc9fa;
+    border-radius: 2px;
+}
+.brand-name-scroll::-webkit-scrollbar-thumb:hover {
+    background: #a8a4f7;
+}
+.brand-name-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #ccc9fa transparent;
+}
+</style>
+<div class="container-section">
+    <div class="container-fluid mt-2">
+        <div class="row">
+            <div class="row mb-3 align-items-center">
+                <div class="col-md-3"></div>
+                <div class="col-md-6 text-center">
+                    <p class="mb-0" style="font-size: 18px; color: #34495e; font-weight: 600; font-family: 'Outfit', sans-serif;">
+                     Branch & Brand Wise Outstanding Summary
+                </p>
+                <p class="text-center text-muted" style="font-size: 14px; font-weight: 500;">
+                    As of Date : <strong>[[=as_of_date_formatted]]</strong>
+                </p>
+            </div>
+            <div class="col-md-3 text-end">
+                    <a class="btn btn-success btn-sm me-1" href="[[=URL('report', 'download_branch_brand_wise_outstanding_summary_report')]]">
+                        <i class="fa fa-download"></i> Download
+                    </a>
+                    <button class="btn btn-secondary btn-sm" id="btnPrint" ><i class="fa fa-print"></i> Print</button>
+                </div>
+            </div>
+            <div  id="printThis">
+                <style>
+                @media print {
+                #tr_table, #tr_table th, #tr_table tr, #tr_table td {
+                    border: 1px solid black !important;
+                }
+                #printThis, #printThis * {
+                    font-size: 8px !important;
+                }
+                #printThis table th, #printThis table td {
+                    padding: 1px 2px !important;
+                }
+                .brand-name-scroll {
+                    display: block;
+                    max-width: 50px;   /* এখানে চাইলে width কমান/বাড়ান */
+                    overflow-x: auto;
+                    white-space: nowrap;
+                }
+                /* custom thin scrollbar for brand name */
+                .brand-name-scroll::-webkit-scrollbar {
+                    height: 4px;
+                }
+                .brand-name-scroll::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .brand-name-scroll::-webkit-scrollbar-thumb {
+                    background: #ccc9fa;
+                    border-radius: 2px;
+                }
+                .brand-name-scroll::-webkit-scrollbar-thumb:hover {
+                    background: #a8a4f7;
+                }
+                .brand-name-scroll {
+                    scrollbar-width: thin;
+                    scrollbar-color: #ccc9fa transparent;
+                }
+                }
+                </style>
+                <!-- Print-only header (hidden on screen, visible in print) -->
+                <div class="print-header d-none d-print-block text-center mb-2">
+                    <strong style="font-size: 13pt;">Branch & Brand Wise Outstanding Summary</strong><br>
+                    <span style="font-size: 9pt;">As of Date : <strong>[[=as_of_date_formatted]]</strong></span>
+                </div>
+            
+            <div class="table-responsive">
+                <style>
+                    .table-summary {
+                        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    .table-summary th {
+                        background-color: #34495e !important;
+                        color: #ffffff !important;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        font-size: 12px;
+                        letter-spacing: 0.5px;
+                        padding: 10px 12px;
+                        border: 1px solid #dee2e6;
+                        text-align: center;
+                    }
+                    .table-summary td {
+                        font-size: 13px;
+                        padding: 8px 12px;
+                        border: 1px solid #dee2e6;
+                        vertical-align: middle;
+                    }
+                    .table-summary tr:nth-child(even) {
+                        background-color: #f8f9fa;
+                    }
+                    .table-summary tr:hover {
+                        background-color: #f1f3f5;
+                        transition: background-color 0.15s ease;
+                    }
+                    .font-num {
+                        font-family: 'Consolas', 'Courier New', Courier, monospace;
+                        font-weight: 500;
+                    }
+                    .double-underline {
+                        border-bottom: 3px double #000000 !important;
+                        border-top: 1px solid #000000 !important;
+                        font-weight: bold;
+                        background-color: #e9ecef !important;
+                    }
+                </style>
+                <table class="table table-bordered table-sm" id="myTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="text-align: left;">BRAND</th>
+                            <th style="text-align: center;">TOTAL</th>
+                            [[for branch_rec in active_branches:]]
+                            <th style="text-align: center;">[[=branch_rec.short_name or branch_rec.code or branch_rec.name]]</th>
+                            [[pass]]
+                        </tr>
+                    </thead>
+                    <tbody>
+                        [[for row in recordList:]]
+                        <tr>
+                            <td style="text-align: left; color: #2c3e50;"><div class="brand-name-scroll">[[=row['brand_name']]]</div></td>
+                            <td style="text-align: right; font-weight: bold; color: #16a085;">[[=easy_format(row['row_total'])]]</td>
+                            [[for branch_rec in active_branches:]]
+                            <td style="text-align: right;" >
+                                [[val = row['balances'].get(branch_rec.id, 0.0)]]
+                                [[=easy_format(val) if val != 0 else '0.00']]
+                            </td>
+                            [[pass]]
+                        </tr>
+                        [[pass]]
+                        
+                        <!-- Totals Row -->
+                        <tr class="fw-bold bg-info">
+                            <td style="text-align: left;" >TOTAL</td>
+                            <td style="text-align: right;" >-</td>
+                            [[for branch_rec in active_branches:]]
+                            <td style="text-align: right;" >
+                                [[val = col_totals.get(branch_rec.id, 0.0)]]
+                                [[=easy_format(val) if val != 0 else '0.00']]
+                            </td>
+                            [[pass]]
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <br><br><br>
+                <div class="print-header d-none d-print-block text-center mb-4">
+                    <table width="100%">
+                        <tr>
+                            <td width="33%" align="center">___________________________________</td>
+                            <td width="33%" align="center">___________________________________</td>
+                            <td width="33%" align="center">___________________________________</td>
+                        </tr>
+                        <tr>
+                            <td width="33%" align="center"><strong>Prepared By</strong></td>
+                            <td width="33%" align="center"><strong>Checked By</strong></td>
+                            <td width="33%" align="center"><strong>Approved By</strong></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+[[end]]
+[[block scripts]]
+<script>
+    $(document).ready(function () {
+        $('#btnPrint').on('click', function () {
+        
+        var printContents = $('#printThis').clone();
+        var originalContents = $('body').clone();
+
+        $('body').empty().html(printContents);
+        window.print();
+        $('body').html(originalContents);
+        window.location.reload();
+        });
+    });
+</script>
+[[end]]

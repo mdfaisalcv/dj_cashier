@@ -1,0 +1,162 @@
+[[extend 'layout_landscape.html']]
+
+[[block header]]
+[[icon='fa fa-chart-line']]
+[[breadcamp = 'Branch wise Imprest Money (Bank) Reconciliation Report']]
+[[end]]
+
+
+[[block content]]
+<div class="container-section">
+    <div class="d-flex justify-content-between align-items-center">
+
+        <div class="d-flex justify-content-end">
+            <div class="p-1">
+                <div class="dropdown">
+                   
+                    <style>
+                        .cu-filter-value-list-dropdown__title {
+                            font-weight: 500;
+                            font-size: 1rem;
+                            line-height: 1.25;
+                            margin-top: 2px;
+                            position: relative;
+                            color: rgb(79, 87, 98);
+                            text-decoration: none;
+                            z-index: 10;
+                        }
+                    </style>
+
+                    
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row ">
+            
+            <div class="row mb-3 align-items-center">
+                <div class="col-md-3"></div>
+                <div class="col-md-6 text-center">
+                    <p class="mb-0" style="font-size: 18px">
+                    Branch Name : <strong>[[=branch_name]]</strong>
+                    <br>
+                    <span style="font-size: 11px">
+                        2.4 Branch wise Imprest Money (Bank) Reconciliation Report
+                        <br>
+                        Date: [[=startDate]] to [[=endDate]]
+                    </span>
+                </p>
+            </div>
+            <div class="col-md-3 text-end">
+                    <!-- <button class="btn btn-success btn-sm me-1" onclick="exportTableToExcel('myTable')"><i class="fa fa-download"></i> Download</button> -->
+                    <a class="btn btn-success btn-sm me-1" href="[[=URL('report', 'download_branch_wise_imprest_money_bank_reconciliation_report')]]">
+                        <i class="fa fa-download"></i> Download
+                    </a>
+                    <button class="btn btn-secondary btn-sm" id="btnPrint" ><i class="fa fa-print"></i> Print</button>
+                </div>
+            </div>
+            <div  id="printThis">
+                <style>
+                @media print {
+                #tr_table, #tr_table th, #tr_table tr, #tr_table td {
+                    border: 1px solid black !important;
+                }
+                #printThis, #printThis * {
+                    font-size: 8px !important;
+                }
+                #printThis table th, #printThis table td {
+                    padding: 1px 2px !important;
+                }
+                }
+                </style>
+                <!-- Print-only header (hidden on screen, visible in print) -->
+                <div class="print-header d-none d-print-block text-center mb-2">
+                    <strong style="font-size: 13pt;">Branch Name : [[=branch_name]]</strong><br>
+                    <span style="font-size: 9pt;">
+                        2.4 Branch wise Imprest Money (Bank) Reconciliation Report &nbsp;|&nbsp;
+                        Date: [[=startDate]] to [[=endDate]]
+                    </span>
+                </div>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm" style="width:100%" id="myTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="text-align: center;">Branch</th>
+                            <th style="text-align: center;">Opening Balance</th>
+                            <th style="text-align: center;">Total Receipt from HQ</th>
+                            <th style="text-align: center;">Transfer to Imprest Cash (C)</th>
+                            <th style="text-align: center;">Total Expenses Through CQ</th>
+                            <th style="text-align: center;">Closing Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        [[tot_total_receipt_from_hq = 0]]
+                        [[tot_transfer_imprest_cash = 0]]
+                        [[tot_total_expense_cq = 0]]
+
+                        [[for row in recordList:]]
+                        [[tot_total_receipt_from_hq += row['total_receipt_from_hq'] if row['total_receipt_from_hq'] else 0]]
+                        [[tot_transfer_imprest_cash += row['transfer_imprest_cash'] if row['transfer_imprest_cash'] else 0]]
+                        [[tot_total_expense_cq += row['total_expense_cq'] if row['total_expense_cq'] else 0]]
+
+                        <tr>
+                            <td style="text-align: center;">[[=row['branch_name']]]</td>
+                            <td style="text-align: right; color: green;">[[if row['opening_balance']==None:]]0.00[[else:]][[=easy_format(row['opening_balance'])]][[pass]]</td>
+                            <td style="text-align: right; color: green;">[[if row['total_receipt_from_hq']==None:]]0.00[[else:]][[=easy_format(row['total_receipt_from_hq'])]][[pass]]</td>
+                            <td style="text-align: right; color: red;">[[if row['transfer_imprest_cash']==None:]]0.00[[else:]][[=easy_format(row['transfer_imprest_cash'])]][[pass]]</td>
+                            <td style="text-align: right; color: red;">[[if row['total_expense_cq']==None:]]0.00[[else:]][[=easy_format(row['total_expense_cq'])]][[pass]]</td>
+                            <td style="text-align: right; font-weight: bold;">[[if row['closing_balance']==None:]]0.00[[else:]][[=easy_format(row['closing_balance'])]][[pass]]</td>
+                        </tr>
+                        [[pass]]    
+                        <tr class="bg-info fw-bold text-white">
+                            <td style="text-align: right;" colspan="2">Total</td>
+                            <td style="text-align: right;">[[=easy_format(tot_total_receipt_from_hq)]]</td>
+                            <td style="text-align: right;">[[=easy_format(tot_transfer_imprest_cash)]]</td>
+                            <td style="text-align: right;">[[=easy_format(tot_total_expense_cq)]]</td>
+                            <td style="text-align: right;"></td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+            <br><br><br>
+                <div class="print-header d-none d-print-block text-center mb-4">
+                    <table width="100%">
+                        <tr>
+                            <td width="33%" align="center">___________________________________</td>
+                            <td width="33%" align="center">___________________________________</td>
+                            <td width="33%" align="center">___________________________________</td>
+                        </tr>
+                        <tr>
+                            <td width="33%" align="center"><strong>Prepared By</strong></td>
+                            <td width="33%" align="center"><strong>Checked By</strong></td>
+                            <td width="33%" align="center"><strong>Approved By</strong></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+[[end]]
+[[block scripts]]
+<!-- individual pages can add scripts here -->
+<script>
+    $(document).ready(function () {
+        $('#btnPrint').on('click', function () {
+        
+        var printContents = $('#printThis').clone();
+        var originalContents = $('body').clone();
+
+        $('body').empty().html(printContents);
+        window.print();
+        $('body').html(originalContents);
+        window.location.reload();
+        });
+    });
+</script>
+[[end]]

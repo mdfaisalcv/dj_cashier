@@ -1,0 +1,142 @@
+{% extends 'layout.html' %}
+
+{% block header %}
+    {% with icon='fa fa-chart-line' breadcamp='Open Date' %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{% block content %}
+<div class="container-section">
+    <div class="d-flex justify-content-between align-items-center border-bottom">
+        <span class="icon-text icon-text-bold">
+            <i class="fa-solid fa-plus"></i>
+            <span>Create</span>
+        </span>
+
+        <div class="d-flex justify-content-end">
+            <div class="p-1">
+                <a href="{% url 'cashier:open_date-index' %}" class="btn btn-sm btn-light">
+                    <i class="fa-solid fa-arrow-left"></i> <span class="ms-2">Back</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="container py-2">
+
+        <form action="{% url 'cashier:open_date-submit' %}" method="POST">
+            {% csrf_token %}
+        <div id="custom_form">        
+            <div class="row">   
+                
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="branch_name" class="form-label">TDCL Branch </label>
+                        <select class="select_custom form-control form-select-sm selectChange" name="branch_name"
+                            id="branch_name">
+                            <option value="">Select Branch</option>
+                            {% for row in branchList %}
+                            <option value="{{ row.id }}" {% if branchList|length == 1 %} selected {% endif %}>{{ row.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>                    
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="user_id" class="form-label">Applied for User</label>
+                        <select class="select_custom form-control form-select-sm selectChange" name="user_id"
+                            id="user_id">
+                            <option value="">Select User</option>
+                            {% for row in userList %}
+                            <option value="{{ row.id }}">{{ row.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>                    
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="active_date" class="form-label">Allow Entry Date</label>
+                        <div class="flatpickr-wrapper">
+                            <input type="text" class="form-control form-control-sm date-picker-multi" name="active_date" placeholder="Select From Date" value="">
+                            <i class="fa fa-calendar calendar-icon text-secondary calendar-toggle"></i>                            
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="expire_at" class="form-label">Allow Release Upto</label>
+                        <div class="flatpickr-wrapper">
+                            <input type="text" class="form-control form-control-sm date-picker" name="expire_at" placeholder="Select Date" value="">
+                            <i class="fa fa-calendar calendar-icon text-secondary calendar-toggle"></i>                            
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3"></div>
+                <div class="col-md-3"></div>
+                <div class="col-md-3"></div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="1" checked id="status" name="status">
+                            <label class="form-check-label" for="status">
+                              Active
+                            </label>
+                        </div>
+                    </div>                    
+                </div>
+                <div class="col-md-3"></div>
+                
+              
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-start">
+                        <div class="me-2">
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i class="fa-regular fa-floppy-disk"></i> <span class="ms-2">Save</span>
+                            </button>
+                        </div>
+                        <div class="">
+                            <button type="reset" class="btn btn-sm btn-light">
+                                <i class="fa-solid fa-retweet"></i> <span class="ms-2">Reset</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </form>
+    </div>
+
+</div>
+{%endblock%}
+{%block scripts%}
+<!-- individual pages can add scripts here -->
+ <script>
+    
+$(document).ready(function () {
+    $(".date-picker-multi").each(function () {
+        var $input = $(this);
+
+        var fp = $input.flatpickr({
+            disableMobile: true,
+            allowInput: true,
+            mode: "multiple",          // ✅ multiple date selection
+            monthSelectorType: "dropdown",
+            dateFormat: "Y-m-d",       // value stored/submitted
+            altInput: true,
+            altFormat: "d-M-Y",        // user-friendly display
+            // defaultDate: ["2025-09-01", "2025-09-10"], // optional: preselect multiple
+        });
+
+        // Toggle calendar open when clicking icon
+        $input.closest(".flatpickr-wrapper").find(".calendar-toggle").on("click", function () {
+            fp.open();
+        });
+    });
+});
+
+ </script>
+{%endblock%}

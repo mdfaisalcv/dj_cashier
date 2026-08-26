@@ -1,0 +1,171 @@
+{% extends 'layout.html' %}
+
+{% block header %}
+    {% with icon='fa fa-chart-line' breadcamp='Bank Accounts' %}
+        {{ block.super }}
+    {% endwith %}
+{% endblock %}
+
+{% block content %}
+<div class="container-section">
+    <div class="d-flex justify-content-between align-items-center border-bottom">
+        <span class="icon-text icon-text-bold">
+            <i class="fa-solid fa-plus"></i>
+            <span>Edit</span>
+        </span>
+
+        <div class="d-flex justify-content-end">
+            <div class="p-1">
+                <button type="button" class="btn btn-sm btn-light d-none" id="btn_view">
+                    <i class="fa-regular fa-eye"></i> <span class="ms-2">View</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-light" id="btn_edit">
+                    <i class="fa-regular fa-pen-to-square"></i> <span class="ms-2">Edit</span>
+                </button>
+            </div>
+            <div class="p-1">
+                <a href="{% url 'cashier:bank_account-index' %}" class="btn btn-sm btn-light">
+                    <i class="fa-solid fa-arrow-left"></i> <span class="ms-2">Back</span>
+                </a>
+            </div>
+            <!-- <div class="p-1">
+                <div class="btn-group">
+                    <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        Action
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="delete?id={{record.id}}" id="delete_btn">
+                            <i class="fa-solid fa-trash-can"></i><span class="ms-2">Delete</span></a>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+    </div>
+    <div class="container py-2">
+
+        <form action="{% url 'cashier:bank_account-update' %}?id={{ record.id }}" method="POST">
+            {% csrf_token %}
+
+            <div id="custom_form">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3 custom_input">
+                            <label for="branch_name" class="form-label">TDCL Branch</label>
+                            <select class="select_custom form-control form-select-sm selectChange" name="branch_name"
+                                id="branch_name">
+                                <option value="">Select Branch</option>
+                                {% for row in branchList %}
+                                <option value="{{row.id}}" {% if record.branch_id == row.id %} selected {% endif %}>
+                                    {{row.name}}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3 custom_input">
+                            <label for="bank_name" class="form-label">Bank </label>
+                            <select class="select_custom form-control form-select-sm selectChange" name="bank_name"
+                                id="bank_name">
+                                <option value="">Select Bank</option>
+                            </select>
+                            <input type="hidden" name="bank_id_hidden" id="bank_id_hidden" value="{{ record.bank_id }}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3 custom_input">
+                            <label for="account_number" class="form-label">Account Number</label>
+                            <input type="text" id="account_number" name="account_number"
+                                value="{{ record.account_number }}" class="form-control form-control-sm">
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="mb-3 ">
+                            <label for="status" class="form-label">Status</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="1" id="status" name="status"
+                                    disabled {% if record.status == 1 %} checked {% endif %}>
+                                <label class="form-check-label" for="status">
+                                    Active
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4"></div>
+
+
+                </div>
+                <div class="row d-none" id="edit_view_section">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-start">
+                            <div class="me-2">
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="fa-regular fa-floppy-disk"></i> <span class="ms-2">Update</span>
+                                </button>
+                            </div>
+                            <div class="">
+                                <button type="reset" class="btn btn-sm btn-light">
+                                    <i class="fa-solid fa-retweet"></i> <span class="ms-2">Reset</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
+{% block scripts %}
+<!-- individual pages can add scripts here -->
+<script>
+
+    $(document).ready(function () {
+        let branchId = $('#branch_name').val();
+        if (branchId) {
+            loadBanks(branchId);
+        }
+    });
+
+    $('#branch_name').on('change', function () {
+        loadBanks($(this).val());
+    });
+
+    function loadBanks(branchId) {
+        let hiddenBankId = $('#bank_id_hidden').val(); // ✅ Get hidden bank_id value
+        console.log(hiddenBankId)
+        $('#bank_name').html('<option value="">Loading...</option>');
+
+        if (branchId) {
+            $.ajax({
+                url: '{% url "cashier:get_banks_by_branch" %}',
+                type: "GET",
+                dataType: "json", // ✅ ensure JSON
+                data: { branch_id: branchId },
+                success: function (response) {
+                    $('#bank_name').html('<option value="">Select Bank</option>');
+
+                    response.results.forEach(bank => {
+                        // ✅ Use == to match even if one is a string and the other is a number
+                        let selected = (String(bank.id) === String(hiddenBankId)) ? 'selected' : '';
+                        $('#bank_name').append(
+                            `<option value="${bank.id}" ${selected}>${bank.name}</option>`
+                        );
+                    });
+                },
+                error: function () {
+                    $('#bank_name').html('<option value="">Error loading banks</option>');
+                }
+            });
+        } else {
+            $('#bank_name').html('<option value="">Select Bank</option>');
+        }
+    }
+
+
+</script>
+
+{% endblock %}

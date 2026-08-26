@@ -1,0 +1,724 @@
+[[extend 'layout.html']]
+
+[[block header]]
+[[icon='fa fa-chart-line']]
+[[breadcamp = 'Dashboard']]
+[[end]]
+
+[[block content]]
+<style>
+  /* ═══════════════════════════════════════════
+   DASHBOARD – PREMIUM STYLES
+═══════════════════════════════════════════ */
+  :root {
+    --db-radius: 10px;
+    --db-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+    --db-border: #e3e8ef;
+  }
+
+  /* ─── Summary Cards ──────────────────────── */
+  .db-card {
+    border-radius: var(--db-radius);
+    padding: 15px 16px 12px;
+    color: #fff;
+    min-height: 88px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
+    transition: transform .22s ease, box-shadow .22s ease;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+  }
+
+  .db-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.24);
+    color: #fff;
+  }
+
+  .db-card .db-card-icon {
+    position: absolute;
+    right: 14px;
+    bottom: 10px;
+    font-size: 2.5rem;
+    opacity: .16;
+    pointer-events: none;
+  }
+
+  .db-card-label {
+    font-size: .67rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: .82;
+    margin-bottom: 2px;
+  }
+
+  .db-card-value {
+    font-size: 1.32rem;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  .db-card-sub {
+    font-size: .62rem;
+    opacity: .70;
+    margin-top: 3px;
+  }
+
+  /* Card colour themes */
+  .c-branch {
+    background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+  }
+
+  .c-sales {
+    background: linear-gradient(135deg, #b71c1c, #c62828, #e53935);
+  }
+
+  .c-coll {
+    background: linear-gradient(135deg, #1b5e20, #2e7d32, #43a047);
+  }
+
+  .c-dep {
+    background: linear-gradient(135deg, #0d47a1, #1565c0, #1976d2);
+  }
+
+  .c-exp {
+    background: linear-gradient(135deg, #bf360c, #d84315, #e64a19);
+  }
+
+  .c-out {
+    background: linear-gradient(135deg, #4a148c, #6a1b9a, #8e24aa);
+  }
+
+  /* ─── Section header ─────────────────────── */
+  .db-section-hdr {
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #6c757d;
+    border-left: 3px solid #0d6efd;
+    padding-left: 8px;
+    margin: 20px 0 10px;
+  }
+
+  /* ─── Panel card ─────────────────────────── */
+  .db-panel {
+    background: #fff;
+    border: 1px solid var(--db-border);
+    border-radius: var(--db-radius);
+    box-shadow: var(--db-shadow);
+    padding: 12px;
+    height: 100%;
+  }
+
+  .db-panel-title {
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: #495057;
+    margin-bottom: 8px;
+  }
+
+  /* ─── Segment table ──────────────────────── */
+  .seg-tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .seg-tbl th,
+  .seg-tbl td {
+    padding: 5px 8px;
+    border: 1px solid #dee2e6;
+  }
+
+  .seg-tbl thead th {
+    background: #16213e;
+    color: #fff;
+    font-weight: 700;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .seg-tbl tbody tr:hover td {
+    background: #f5f7fa !important;
+  }
+
+  .seg-tbl .seg-label {
+    font-weight: 700;
+    color: #344054;
+    background: #f9fafb;
+  }
+
+  .seg-tbl .seg-total td {
+    background: #d4edda;
+    font-weight: 800;
+    border-top: 2px solid #28a745;
+    color: #155724;
+  }
+
+  /* ─── Monthly comparison table ───────────── */
+  .month-tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .month-tbl th,
+  .month-tbl td {
+    padding: 6px 10px;
+    border: 1px solid #dee2e6;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .month-tbl thead th {
+    background: #16213e;
+    color: #fff;
+    font-weight: 700;
+    font-size: 11px;
+  }
+
+  .month-tbl thead th.lbl-col {
+    text-align: left;
+    background: #16213e;
+    min-width: 110px;
+  }
+
+  .month-tbl .row-lbl {
+    text-align: left;
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  /* Row colour themes */
+  .tr-sales td {
+    background: #ffe5e5;
+  }
+
+  .tr-sales .row-lbl {
+    background: #c62828;
+    color: #fff;
+  }
+
+  .tr-coll td {
+    background: #e8f5e9;
+  }
+
+  .tr-coll .row-lbl {
+    background: #2e7d32;
+    color: #fff;
+  }
+
+  .tr-money-receipt td {
+    background: #fff3e0;
+  }
+
+  .tr-money-receipt .row-lbl {
+    background: #FF9900;
+    color: #fff;
+  }
+
+  .tr-dep td {
+    background: #e3f2fd;
+  }
+
+  .tr-dep .row-lbl {
+    background: #1565c0;
+    color: #fff;
+  }
+
+  .tr-exp td {
+    background: #fce4ec;
+  }
+
+  .tr-exp .row-lbl {
+    background: #d84315;
+    color: #fff;
+  }
+
+  .tr-out td {
+    background: #eedff9;
+  }
+
+  .tr-out .row-lbl {
+    background: #6a1b9a;
+    color: #fff;
+  }
+
+  #chartdiv {
+    width: 100%;
+    height: 500px;
+  }
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<div class="container-fluid">
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       ROW 1 – SUMMARY CARDS
+  ═══════════════════════════════════════════════════════════════ -->
+  <div class="db-section-hdr">
+    Summary &ndash; <span id="summary_month_label_header">...</span> &nbsp;|&nbsp; All Branch
+  </div>
+
+  <div class="row g-2 mb-1">
+
+    <!-- Branch / Period -->
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="db-card c-branch">
+        <i class="fa fa-code-branch db-card-icon"></i>
+        <div class="db-card-label"><i class="fa fa-building me-1"></i> Branch</div>
+        <div class="db-card-value" id="summary_month_label">...</div>
+        <div class="db-card-sub">All Branch</div>
+      </div>
+    </div>
+
+    <!-- Sales -->
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="db-card c-sales">
+        <i class="fa fa-shopping-bag db-card-icon"></i>
+        <div class="db-card-label"><i class="fa fa-shopping-bag me-1"></i> Sales</div>
+        <div class="db-card-value">&#2547; <span id="summary_sales_cr">0</span></div>
+        <div class="db-card-sub" id="summary_sales_m">0</div>
+      </div>
+    </div>
+
+    <!-- Collection -->
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="db-card c-coll">
+        <i class="fa fa-wallet db-card-icon"></i>
+        <div class="db-card-label"><i class="fa fa-wallet me-1"></i> Collection</div>
+        <div class="db-card-value">&#2547; <span id="summary_collection_cr">0</span></div>
+        <div class="db-card-sub" id="summary_collection_m">0</div>
+      </div>
+    </div>
+
+    <!-- Deposit -->
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="db-card c-dep">
+        <i class="fa fa-university db-card-icon"></i>
+        <div class="db-card-label"><i class="fa fa-university me-1"></i> Deposit</div>
+        <div class="db-card-value">&#2547; <span id="summary_deposit_cr">0</span></div>
+        <div class="db-card-sub" id="summary_deposit_m">0</div>
+      </div>
+    </div>
+
+    <!-- Expense -->
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="db-card c-exp">
+        <i class="fa fa-credit-card db-card-icon"></i>
+        <div class="db-card-label"><i class="fa fa-credit-card me-1"></i> Expense</div>
+        <div class="db-card-value">&#2547; <span id="summary_expense_cr">0</span></div>
+        <div class="db-card-sub" id="summary_expense_m">0</div>
+      </div>
+    </div>
+
+    <!-- Outstanding -->
+    <div class="col-6 col-md-4 col-xl-2">
+      <div class="db-card c-out">
+        <i class="fa fa-balance-scale db-card-icon"></i>
+        <div class="db-card-label"><i class="fa fa-balance-scale me-1"></i> Outstanding</div>
+        <div class="db-card-value">&#2547; <span id="summary_outstanding_cr">0</span></div>
+        <div class="db-card-sub" id="summary_outstanding_m">0</div>
+      </div>
+    </div>
+
+  </div><!-- /row 1 -->
+
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       ROW 2 – SEGMENT-WISE BREAKDOWN
+  ═══════════════════════════════════════════════════════════════ -->
+  <div class="db-section-hdr">Segment-wise Breakdown &ndash; Current Period</div>
+
+  <div class="db-panel mb-3" style="overflow-x:auto;">
+    <table class="seg-tbl">
+      <thead>
+        <tr>
+          <th rowspan="2" style="vertical-align:middle;">Segment</th>
+
+          <th colspan="2" class="text-center text-white" style="background-color: #c62828;">
+            Sales
+          </th>
+
+          <th colspan="2" class="text-center text-white" style="background-color: #2e7d32;">
+            Collection
+          </th>
+          <th colspan="2" class="text-center text-white" style="background-color: #FF9900;">
+            Money Receipt
+          </th>
+
+          <th colspan="2" class="text-center text-white" style="background-color: #1565c0;">
+            Deposit
+          </th>
+        </tr>
+
+        <tr>
+          <th class="text-end">Amount</th>
+          <th class="text-end">In Cr</th>
+
+          <th class="text-end">Amount</th>
+          <th class="text-end">In Cr</th>
+
+          <th class="text-end">Amount</th>
+          <th class="text-end">In Cr</th>
+
+          <th class="text-end">Amount</th>
+          <th class="text-end">In Cr</th>
+        </tr>
+      </thead>
+      <tbody id="segment_table_body">
+        <tr>
+          <td colspan="9" class="text-center text-muted py-3">
+            <i class="fa fa-spinner fa-spin"></i> Loading...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       ROW 2.75 – MONTH-WISE CHART
+  ═══════════════════════════════════════════════════════════════ -->
+  <div class="db-section-hdr">Month-wise Chart</div>
+  <div class="db-panel mb-4">
+    <div id="chart_div" style="width: 100%; height: 400px; min-height: 400px;">
+      <div class="text-center text-muted py-5"><i class="fa fa-spinner fa-spin"></i> Loading chart...</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       ROW 3 – MONTH-WISE SUMMARY TABLE
+  ═══════════════════════════════════════════════════════════════ -->
+  <div class="db-section-hdr">Month-wise Summary</div>
+
+  <div class="db-panel mb-4" id="month_panel" style="overflow-x: auto; padding: 10px;">
+    <div class="text-center text-muted py-3">
+      <i class="fa fa-spinner fa-spin"></i> Loading monthly data...
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       ROW 2.5 – BRANCH-WISE BREAKDOWN
+  ═══════════════════════════════════════════════════════════════ -->
+  <div class="db-section-hdr">Branch-wise Breakdown &ndash; Current Period</div>
+
+  <div class="db-panel mb-3" style="overflow-x:auto;">
+    <table class="seg-tbl">
+      <thead>
+        <tr>
+          <th rowspan="2" style="vertical-align:middle;">Branch</th>
+
+          <th colspan="2" class="text-center text-white" style="background-color: #c62828;">
+            Sales
+          </th>
+
+          <th colspan="2" class="text-center text-white" style="background-color: #FF9900;">
+            Money Receipt
+          </th>
+
+          <th colspan="2" class="text-center text-white" style="background-color: #1565c0;">
+            Deposit
+          </th>
+
+          <th colspan="2" class="text-center text-white" style="background-color: #8e24aa;">
+            Outstanding
+          </th>
+        </tr>
+
+        <tr>
+          <th class="text-end">Amount</th>
+          <th class="text-end">In Cr</th>
+
+          <th class="text-end">Amount</th>
+          <th class="text-end">In Cr</th>
+
+          <th class="text-end">Amount</th>
+          <th class="text-end">In Cr</th>
+
+          <th class="text-end">Amount</th>
+          <th class="text-end">In Cr</th>
+        </tr>
+      </thead>
+      <tbody id="branch_table_body">
+        <tr>
+          <td colspan="9" class="text-center text-muted py-3">
+            <i class="fa fa-spinner fa-spin"></i> Loading...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /container-fluid -->
+
+[[end]]
+[[block scripts]]
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script>
+  google.charts.load('current', {'packages': ['corechart']});
+  google.charts.setOnLoadCallback(function() {
+
+    // 1. Summary Cards
+    $.ajax({
+      url: "[[=URL('dashboard', 'api_summary_cards')]]",
+      type: "GET",
+      dataType: "json",
+      success: function(response) {
+        if (response.error) {
+          console.error("Summary error:", response.error);
+          return;
+        }
+        var s = response.summary_cards;
+        if (s) {
+          $("#summary_month_label_header").text(s.month_label);
+          $("#summary_month_label").text(s.month_label);
+          $("#summary_sales_cr").text(s.sales_cr);
+          $("#summary_sales_m").text(s.sales_m);
+          $("#summary_collection_cr").text(s.collection_cr);
+          $("#summary_collection_m").text(s.collection_m);
+          $("#summary_deposit_cr").text(s.deposit_cr);
+          $("#summary_deposit_m").text(s.deposit_m);
+          $("#summary_expense_cr").text(s.expense_cr);
+          $("#summary_expense_m").text(s.expense_m);
+          $("#summary_outstanding_cr").text(s.outstanding_cr);
+          $("#summary_outstanding_m").text(s.outstanding_m);
+        }
+      },
+      error: function(xhr, status, err) {
+        console.error("Summary Error:", status, err);
+      }
+    });
+
+    // 2. Segment Table
+    $.ajax({
+      url: "[[=URL('dashboard', 'api_segment_breakdown')]]",
+      type: "GET",
+      dataType: "json",
+      success: function(response) {
+        if (response.error) {
+          $("#segment_table_body").html('<tr><td colspan="9" class="text-center text-danger">Error: ' + response.error + '</td></tr>');
+          return;
+        }
+        var segBody = $("#segment_table_body");
+        segBody.empty();
+        if (response.seg_list && response.seg_list.length > 0) {
+          response.seg_list.forEach(function(seg) {
+            segBody.append(
+              '<tr>' +
+              '<td class="seg-label">' + seg.name + '</td>' +
+              '<td class="text-end">' + seg.sales_num + '</td>' +
+              '<td class="text-end">' + seg.sales_m + '</td>' +
+              '<td class="text-end">' + seg.collection_num + '</td>' +
+              '<td class="text-end">' + seg.collection_m + '</td>' +
+              '<td class="text-end">' + seg.money_receipt_num + '</td>' +
+              '<td class="text-end">' + seg.money_receipt_m + '</td>' +
+              '<td class="text-end">' + seg.deposit_num + '</td>' +
+              '<td class="text-end">' + seg.deposit_m + '</td>' +
+              '</tr>'
+            );
+          });
+          var st = response.seg_totals;
+          if (st) {
+            segBody.append(
+              '<tr class="seg-total">' +
+              '<td><strong>Total</strong></td>' +
+              '<td class="text-end"><strong>' + st.sales_num + '</strong></td>' +
+              '<td class="text-end"><strong>' + st.sales_m + '</strong></td>' +
+              '<td class="text-end"><strong>' + st.collection_num + '</strong></td>' +
+              '<td class="text-end"><strong>' + st.collection_m + '</strong></td>' +
+              '<td class="text-end"><strong>' + st.money_receipt_num + '</strong></td>' +
+              '<td class="text-end"><strong>' + st.money_receipt_m + '</strong></td>' +
+              '<td class="text-end"><strong>' + st.deposit_num + '</strong></td>' +
+              '<td class="text-end"><strong>' + st.deposit_m + '</strong></td>' +
+              '</tr>'
+            );
+          }
+        } else {
+          segBody.append('<tr><td colspan="9" class="text-center text-muted py-3">No data available</td></tr>');
+        }
+      },
+      error: function(xhr, status, err) {
+        $("#segment_table_body").html('<tr><td colspan="9" class="text-center text-danger">Error loading segment data</td></tr>');
+      }
+    });
+
+    // 3. Branch Table
+    $.ajax({
+      url: "[[=URL('dashboard', 'api_branch_breakdown')]]",
+      type: "GET",
+      dataType: "json",
+      success: function(response) {
+        if (response.error) {
+          $("#branch_table_body").html('<tr><td colspan="9" class="text-center text-danger">Error: ' + response.error + '</td></tr>');
+          return;
+        }
+        var branchBody = $("#branch_table_body");
+        branchBody.empty();
+        if (response.branch_list && response.branch_list.length > 0) {
+          response.branch_list.forEach(function(b) {
+            branchBody.append(
+              '<tr>' +
+              '<td class="seg-label">' + b.name + '</td>' +
+              '<td class="text-end">' + b.sales_num + '</td>' +
+              '<td class="text-end">' + b.sales_m + '</td>' +
+              '<td class="text-end">' + b.money_receipt_num + '</td>' +
+              '<td class="text-end">' + b.money_receipt_m + '</td>' +
+              '<td class="text-end">' + b.deposit_num + '</td>' +
+              '<td class="text-end">' + b.deposit_m + '</td>' +
+              '<td class="text-end">' + b.outstanding_num + '</td>' +
+              '<td class="text-end">' + b.outstanding_m + '</td>' +
+              '</tr>'
+            );
+          });
+          var bt = response.branch_totals;
+          if (bt) {
+            branchBody.append(
+              '<tr class="seg-total">' +
+              '<td><strong>Total</strong></td>' +
+              '<td class="text-end"><strong>' + bt.sales_num + '</strong></td>' +
+              '<td class="text-end"><strong>' + bt.sales_m + '</strong></td>' +
+              '<td class="text-end"><strong>' + bt.money_receipt_num + '</strong></td>' +
+              '<td class="text-end"><strong>' + bt.money_receipt_m + '</strong></td>' +
+              '<td class="text-end"><strong>' + bt.deposit_num + '</strong></td>' +
+              '<td class="text-end"><strong>' + bt.deposit_m + '</strong></td>' +
+              '<td class="text-end"><strong>' + bt.outstanding_num + '</strong></td>' +
+              '<td class="text-end"><strong>' + bt.outstanding_m + '</strong></td>' +
+              '</tr>'
+            );
+          }
+        } else {
+          branchBody.append('<tr><td colspan="9" class="text-center text-muted py-3">No data available</td></tr>');
+        }
+      },
+      error: function(xhr, status, err) {
+        $("#branch_table_body").html('<tr><td colspan="9" class="text-center text-danger">Error loading branch data</td></tr>');
+      }
+    });
+
+    // 4. Monthly Trend (Chart + Table)
+    $.ajax({
+      url: "[[=URL('dashboard', 'api_monthly_trend')]]",
+      type: "GET",
+      dataType: "json",
+      success: function(response) {
+        if (response.error) {
+          var errMsg = '<div class="text-center text-danger py-4">Error: ' + response.error + '</div>';
+          $("#month_panel").html(errMsg);
+          $("#chart_div").html(errMsg);
+          return;
+        }
+
+        var monthPanel = $("#month_panel");
+        monthPanel.empty();
+
+        if (response.has_months && response.month_cols && response.month_cols.length > 0) {
+          
+          // --- Draw Chart ---
+          var data = new google.visualization.DataTable();
+          data.addColumn('string', 'Month');
+          data.addColumn('number', 'Sales');
+          data.addColumn({type: 'string', role: 'annotation'});
+          data.addColumn('number', 'Collection');
+          data.addColumn({type: 'string', role: 'annotation'});
+          data.addColumn('number', 'Money Receipt');
+          data.addColumn({type: 'string', role: 'annotation'});
+          data.addColumn('number', 'Deposit');
+          data.addColumn({type: 'string', role: 'annotation'});
+          data.addColumn('number', 'Expense');
+          data.addColumn({type: 'string', role: 'annotation'});
+          data.addColumn('number', 'Outstanding');
+          data.addColumn({type: 'string', role: 'annotation'});
+
+          var chartCols = response.month_cols.slice(); // current month first → oldest last
+          chartCols.forEach(function(col) {
+            function fmt(v) { return v ? v.toFixed(2) : '0.00'; }
+            data.addRow([
+              col.label,
+              col.sales_chart || 0,        fmt(col.sales_chart),
+              col.coll_chart || 0,         fmt(col.coll_chart),
+              col.money_receipt_chart || 0,fmt(col.money_receipt_chart),
+              col.dep_chart || 0,          fmt(col.dep_chart),
+              col.exp_chart || 0,          fmt(col.exp_chart),
+              col.out_chart || 0,          fmt(col.out_chart)
+            ]);
+          });
+
+          var chartData = data;
+          var chartOptions = {
+            title: 'Monthly Performance (In Crore)',
+            vAxis: {title: 'Amount (Cr)'},
+            hAxis: {title: 'Month'},
+            seriesType: 'bars',
+            annotations: {
+              alwaysOutside: true,
+              textStyle: {fontSize: 8, bold: false, color: '#444'},
+              stem: {color: 'none', length: 4}
+            },
+            series: {
+              0: {color: '#c62828'}, // Sales
+              1: {color: '#2e7d32'}, // Collection
+              2: {color: '#FF9900'}, // Money Receipt (Madagascar color)
+              3: {color: '#1565c0'}, // Deposit
+              4: {color: '#d84315'}, // Expense
+              5: {type: 'line', color: '#8e24aa', lineWidth: 3, pointSize: 5} // Outstanding
+            },
+            legend: {position: 'top'},
+            animation: {startup: true, duration: 1000, easing: 'out'},
+            chartArea: {width: '85%', height: '65%'},
+            bar: {groupWidth: '75%'}
+          };
+
+          var chart = new google.visualization.ComboChart(document.getElementById('chart_div'));
+          chart.draw(chartData, chartOptions);
+
+          // --- Draw Table ---
+          var tbl = $('<table class="month-tbl"></table>');
+          var thead = $('<thead><tr><th class="lbl-col">Particulars</th></tr></thead>');
+          var trLabels = thead.find('tr');
+          
+          var trSales = $('<tr class="tr-sales"><td class="row-lbl">Sales</td></tr>');
+          var trColl = $('<tr class="tr-coll"><td class="row-lbl">Collection</td></tr>');
+          var trMr = $('<tr class="tr-money-receipt"><td class="row-lbl">Money Receipt</td></tr>');
+          var trDep = $('<tr class="tr-dep"><td class="row-lbl">Deposit</td></tr>');
+          var trExp = $('<tr class="tr-exp"><td class="row-lbl">Expense</td></tr>');
+          var trOut = $('<tr class="tr-out"><td class="row-lbl">Outstanding</td></tr>');
+
+          response.month_cols.forEach(function(col) {
+            trLabels.append('<th>' + col.label + '</th>');
+            trSales.append('<td>' + col.sales_cr + '</td>');
+            trColl.append('<td>' + col.coll_cr + '</td>');
+            trMr.append('<td>' + col.money_receipt_cr + '</td>');
+            trDep.append('<td>' + col.dep_cr + '</td>');
+            trExp.append('<td>' + col.exp_cr + '</td>');
+            trOut.append('<td>' + col.out_cr + '</td>');
+          });
+
+          tbl.append(thead);
+          var tbody = $('<tbody></tbody>');
+          tbody.append(trSales, trColl, trMr, trDep, trExp, trOut);
+          tbl.append(tbody);
+          
+          monthPanel.append(tbl);
+
+        } else {
+          monthPanel.html('<div class="text-center text-muted py-4">No monthly data available</div>');
+          $("#chart_div").html('<div class="text-center text-muted py-5">No chart data available</div>');
+        }
+      },
+      error: function(xhr, status, err) {
+        $("#month_panel").html('<div class="text-center text-danger py-4">Error loading monthly data</div>');
+        $("#chart_div").html('<div class="text-center text-danger py-5">Error loading chart</div>');
+      }
+    });
+
+  });
+</script>
+[[end]]
